@@ -29,10 +29,12 @@ function search() {
   nav.hidden = Boolean(query);
   if (!query) return;
   const words = query.split(/\s+/);
-  const matches = window.docIndex.map(item => {
+  const matches = window.docIndex.map((item, i, sections) => {
     const name = normalize(item.title), body = normalize(item.body);
-    const score = words.every(w => body.includes(w) || name.includes(w)) ?
+    const pageTitle = i === 0 || sections[i - 1].page !== item.page ? normalize(item.page) : "";
+    const sectionScore = words.every(w => body.includes(w) || name.includes(w)) ?
       1 + words.filter(w => name.includes(w)).length * 3 + Number(name.includes(query))*5 : 0;
+    const score = pageTitle.includes(query) ? Math.max(sectionScore, pageTitle === query ? 100 : 5) : sectionScore;
     return {item,score};
   }).filter(x => x.score).sort((a,b) => b.score-a.score).slice(0,15);
   for (const {item} of matches) {

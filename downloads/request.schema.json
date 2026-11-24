@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:ndn5030:device:request:v1",
-  "title": "NDN5030 Nation device request v1.4",
+  "title": "NDN5030 Reader Control API 1.6 request",
   "type": "object",
   "required": [
     "jsonrpc",

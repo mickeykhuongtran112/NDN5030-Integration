@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reader Control API · NDN5030</title>
-<meta name="description" content="JSON-RPC 2.0 over Ethernet WSS or USB COM. Each Control API v1.4 method is listed with its .NET SDK function, parameters, result fields, errors and a request and response sample.">
+<meta name="description" content="JSON-RPC 2.0 over Ethernet WSS or USB COM. Each Control API v1.6 method is listed with its .NET SDK function, parameters, result fields, errors and a request and response sample.">
 <link rel="stylesheet" href="assets/site.css">
 <script defer src="assets/index-en.js"></script>
 <script defer src="assets/site.js"></script>
@@ -18,14 +18,14 @@
 </div>
 <div class="sidebody">
 <div class="results" aria-label="Search results" aria-live="polite" hidden></div>
-<nav aria-label="Documentation navigation"><div class="navgroup"><h2>System overview</h2><a href="index.html">NDN5030 integration</a><a href="concepts.html">Concepts and terms</a></div><div class="navgroup"><h2>Setup and demo</h2><a href="commissioning.html">Connect to a reader</a><a href="demo.html">TCPHost function reference</a></div><div class="navgroup"><h2>Application integration</h2><a href="sdk.html">Direct .NET SDK</a><a href="gateway.html">Gateway deployment</a></div><div class="navgroup"><h2>API reference</h2><a href="rest.html">Gateway REST API</a><a class="active" aria-current="page" href="device.html">Reader Control API</a><a href="radio.html">RF configuration</a></div><div class="navgroup"><h2>Validation and recovery</h2><a href="diagnostics.html">Diagnostics and recovery</a><a href="performance.html">Validation and performance</a></div></nav>
+<nav aria-label="Documentation navigation"><div class="navgroup"><h2>System overview</h2><a href="index.html">NDN5030 integration</a><a href="concepts.html">Concepts and terms</a></div><div class="navgroup"><h2>Setup and demo</h2><a href="commissioning.html">Connect to a reader</a><a href="demo.html">TCPHost function reference</a></div><div class="navgroup"><h2>Application integration</h2><a href="sdk.html">Direct reader control · SDK / Control API</a><a href="gateway.html">POS/backend integration · Gateway REST API</a></div><div class="navgroup"><h2>API reference</h2><a href="rest.html">Gateway REST API</a><a class="active" aria-current="page" href="device.html">Reader Control API</a><a href="radio.html">RF configuration</a></div><div class="navgroup"><h2>Validation and recovery</h2><a href="diagnostics.html">Diagnostics and recovery</a><a href="performance.html">Validation and performance</a></div></nav>
 </div></aside>
 <main id="main"><div class="mainbar"><div class="crumb"><a href="index.html">Documentation</a><span>/</span>API reference</div>
 <nav class="language" aria-label="Language"><a href="device.html" lang="en" hreflang="en" aria-label="English" data-language-link aria-current="true">EN</a><a href="vi/device.html" lang="vi" hreflang="vi" aria-label="Tiếng Việt" data-language-link>VI</a></nav></div>
-<header class="pagehead"><h1>Reader Control API</h1><p class="lead">JSON-RPC 2.0 over Ethernet WSS or USB COM. Each Control API v1.4 method is listed with its .NET SDK function, parameters, result fields, errors and a request and response sample.</p></header>
-<details class="inline-toc"><summary>On this page</summary><nav aria-label="On this page"><span class="toc-group">Protocol</span><a href="#hello">Transport and identification</a><a href="#serial">USB COM protocol</a><a href="#lease">Control sequence</a><a href="#conventions">Request and response conventions</a><span class="toc-group">Methods</span><a href="#methods">Method index</a><a href="#m-hello">hello</a><a href="#m-status-get">status.get</a><a href="#m-lease-acquire">lease.acquire</a><a href="#m-lease-renew">lease.renew</a><a href="#m-lease-release">lease.release</a><a href="#m-reader-get-config">reader.get_config</a><a href="#m-reader-set-config">reader.set_config</a><a href="#m-module-call">module.call</a><a href="#m-module-result">module.result</a><a href="#m-inventory-start">inventory.start</a><a href="#m-inventory-stop">inventory.stop</a><a href="#m-network-get">network.get</a><a href="#m-network-set">network.set</a><a href="#ota">Firmware update sequence</a><a href="#m-ota-status">ota.status</a><a href="#m-ota-begin">ota.begin</a><a href="#m-ota-chunk">ota.chunk</a><a href="#m-ota-finish">ota.finish</a><a href="#m-ota-abort">ota.abort</a><a href="#m-system-reboot">system.reboot</a><span class="toc-group">Notifications</span><a href="#events">Notifications</a><a href="#e-inventory-tags">inventory.tags</a><a href="#e-inventory-state">inventory.state</a><a href="#e-health">health</a><span class="toc-group">Reference</span><a href="#states">States, outcomes and reasons</a><a href="#errors">Error codes</a><a href="#python">Minimal client in Python</a></nav></details>
+<header class="pagehead"><h1>Reader Control API</h1><p class="lead">JSON-RPC 2.0 over Ethernet WSS or USB COM. Each Control API v1.6 method is listed with its .NET SDK function, parameters, result fields, errors and a request and response sample.</p></header>
+<details class="inline-toc"><summary>On this page</summary><nav aria-label="On this page"><span class="toc-group">Protocol</span><a href="#hello">Transport and identification</a><a href="#serial">USB COM protocol</a><a href="#lease">Control sequence</a><a href="#conventions">Request and response conventions</a><span class="toc-group">Methods</span><a href="#methods">Method index</a><a href="#m-hello">hello</a><a href="#m-status-get">status.get</a><a href="#m-lease-acquire">lease.acquire</a><a href="#m-lease-renew">lease.renew</a><a href="#m-lease-release">lease.release</a><a href="#m-reader-get-config">reader.get_config</a><a href="#m-reader-set-config">reader.set_config</a><a href="#m-module-call">module.call</a><a href="#m-module-result">module.result</a><a href="#m-inventory-start">inventory.start</a><a href="#m-inventory-stop">inventory.stop</a><a href="#m-network-get">network.get</a><a href="#m-network-set">network.set</a><a href="#ota">Firmware update sequence</a><a href="#m-ota-status">ota.status</a><a href="#m-ota-begin">ota.begin</a><a href="#m-ota-chunk">ota.chunk</a><a href="#m-ota-finish">ota.finish</a><a href="#m-ota-abort">ota.abort</a><a href="#m-system-reboot">system.reboot</a><span class="toc-group">Notifications</span><a href="#events">Notifications</a><a href="#e-inventory-tags">inventory.tags</a><a href="#e-inventory-state">inventory.state</a><a href="#e-health">health</a><span class="toc-group">Reference</span><a href="#states">States, outcomes and reasons</a><a href="#errors">Error codes</a><a href="#python">Python Ethernet example</a></nav></details>
 <section id="hello"><h2>Transport and identification</h2>
-<div class="api-columns"><div><p>Endpoint wss://&lt;reader-ip&gt;:8443/v1/control accepts Authorization: Bearer &lt;device-token&gt; during the WebSocket handshake. Each UTF-8 text message is one JSON object, maximum 8192 bytes, depth 16. Match RPC responses by id; receive asynchronous notifications continuously.</p><p><code>&lt;device-token&gt;</code> is the <code>token</code> value in the <code>host.json</code> of the reader. The reader certificate is not issued by a public CA, so standard hostname and CA checks fail: compare the SHA-256 of the certificate (DER) with <code>certificate_sha256</code> from <code>host.json</code> and trust only that certificate, as the SDK and the Python client on this page do.</p><p>A wrong or missing token is answered with HTTP 401. A second authenticated connection is answered with HTTP 503 while the first one is open. One controller connection is served per reader, over WSS or USB.</p><p>Continue only if <code>api_major</code> is 1. Keep <code>board_id</code> and <code>boot_id</code>. Check <code>capabilities</code> and <code>module_operations</code> before building control requests. Wait until <code>state</code> is <code>idle</code> before taking the lease. Request fields are also specified in the downloadable JSON Schema.</p><ul><li><a href="downloads/request.schema.json">Request JSON Schema</a></li></ul></div><div><div class="sample"><div class="samplebar"><span>JSON</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+<div class="api-columns"><div><p>Open <code>wss://&lt;reader-ip&gt;:8443/v1/control</code> on the trusted LAN. The reader requires no bearer header. Each WebSocket text message is one UTF-8 JSON object, up to 8192 bytes and 16 levels deep. Match replies by <code>id</code> and consume notifications on the same connection.</p><p>On first use the SDK associates the TLS certificate SHA-256 with <code>hello.board_id</code>. On subsequent connections verify that association before acquiring a lease, including after DHCP changes the address. Supply the expected board ID when the application knows it.</p><p>One controller may connect per reader. A second WSS handshake receives HTTP 503 while the slot is occupied. Disconnect the current owner before switching between Ethernet and USB.</p><p>Continue only if <code>api_major</code> is 1. Keep <code>board_id</code> and <code>boot_id</code>. Check <code>capabilities</code> and <code>module_operations</code> before building control requests. Wait until <code>state</code> is <code>idle</code> before taking the lease. Request fields are also specified in the downloadable JSON Schema.</p><ul><li><a href="downloads/request.schema.json">Request JSON Schema</a></li></ul></div><div><div class="sample"><div class="samplebar"><span>JSON</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
   &quot;jsonrpc&quot;: &quot;2.0&quot;,
   &quot;id&quot;: 1,
   &quot;method&quot;: &quot;hello&quot;,
@@ -33,16 +33,12 @@
 }</code></pre></div></div></div>
 </section>
 <section id="serial"><h2>USB COM protocol</h2>
-<p>Open the USB COM port of the reader at 115200 8N1, with DTR asserted, RTS deasserted and no flow control. Send and receive LF-delimited UTF-8 JSON. The 8192-byte message limit excludes LF. The SDK implements framing and authentication in <code>ReaderClient.FromUsb</code>.</p>
-<ol><li>Generate a random 16-byte nonce C and encode it as 32 lowercase hex characters. Send <code>{&quot;usb&quot;:&quot;challenge&quot;,&quot;client&quot;:&quot;C&quot;}</code>. The reader replies <code>{&quot;usb&quot;:&quot;challenge&quot;,&quot;server&quot;:&quot;S&quot;,&quot;proof&quot;:&quot;&lt;hex&gt;&quot;}</code> with its own nonce S.</li><li>Verify the server&#x27;s proof with HMAC-SHA256 over ASCII <code>NDN5030/usb/device/C/S</code>. Use the 64 ASCII token characters from <code>host.json</code> as the key. Use the actual nonce strings in place of C and S.</li><li>Send <code>{&quot;usb&quot;:&quot;open&quot;,&quot;proof&quot;:&quot;&lt;hex&gt;&quot;}</code> with the lowercase HMAC-SHA256 over ASCII <code>NDN5030/usb/host/C/S</code>. After <code>{&quot;usb&quot;:&quot;ok&quot;}</code>, send <code>hello</code> and use the API catalog below.</li></ol>
-<p>Complete authentication within five seconds of the challenge. Keep the session active with a request such as <code>status.get</code> during idle periods. After 20 seconds without a request, on cable removal or when DTR drops, the reader ends the session without sending anything. The lease has its own five-second deadline.</p>
-<p>Any other handshake failure is answered with <code>{&quot;usb&quot;:&quot;error&quot;,&quot;reason&quot;:&quot;authentication_failed&quot;}</code>: a nonce that is not 32 lowercase hex characters, a wrong proof, or an open step later than five seconds after the challenge. Start again from the challenge. After a session has ended the port stays open and the next request gets the same reply, so repeat the handshake.</p>
-<p>Firmware <code>0.5.0</code> exposes the reader’s application COM port over USB-C. If another controller holds the connection, the reader answers the open step with <code>{&quot;usb&quot;:&quot;error&quot;,&quot;reason&quot;:&quot;reader_busy&quot;}</code>.</p>
+<div class="api-columns"><div><p>Open the application USB COM port at 115200 8N1, with DTR asserted, RTS deasserted and flow control disabled. Each message is one UTF-8 JSON object followed by LF, up to 8192 bytes excluding LF. USB carries the same Control API as Ethernet.</p><p>Send the line below first. The reader echoes the request ID. Check <code>result.board_id</code> and <code>result.boot_id</code> before acquiring the lease. The SDK performs this exchange in <code>ConnectAsync</code>.</p><p>Before admission, any other valid method returns code -32001 with <code>hello_required</code>. If a controller already owns the reader, hello returns -32001 with <code>reader_busy</code>. Release the other connection before retrying.</p><p>During idle periods send <code>status.get</code> to keep USB active. The reader ends the USB session on DTR loss, detach or 20 seconds of host silence. To reopen, assert DTR and send <code>hello</code> again. The RF lease expires separately after five seconds without renewal.</p></div><div><div class="sample"><div class="samplebar"><span>JSON · request</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:1,&quot;method&quot;:&quot;hello&quot;,&quot;params&quot;:{}}</code></pre></div></div></div>
 </section>
 <section id="lease"><h2>Control sequence</h2>
 <figure class="diagram flow-diagram" aria-label="Opening a control session"><div class="diagram-node"><strong>Connect</strong><small>WSS / USB COM</small></div><span class="diagram-arrow" aria-hidden="true"></span><div class="diagram-node"><strong>hello · status.get</strong><small>state = idle</small></div><span class="diagram-arrow" aria-hidden="true"></span><div class="diagram-node"><strong>lease.acquire</strong><small>lease.renew every 1000 ms</small></div></figure>
 <figure class="diagram flow-diagram" aria-label="Configuring, reading and finishing"><div class="diagram-node"><strong>module.call</strong><small>RF settings while idle</small></div><span class="diagram-arrow" aria-hidden="true"></span><div class="diagram-node"><strong>inventory.start</strong><small>inventory.tags · inventory.state</small></div><span class="diagram-arrow" aria-hidden="true"></span><div class="diagram-node"><strong>inventory.stop · lease.release</strong><small>state = finished · idle</small></div></figure>
-<ol><li>Open an authenticated connection and call <code>hello</code>. Check <code>api_major</code>, <code>board_id</code> and the capability list.</li><li>Poll <code>status.get</code> until <code>state</code> is <code>idle</code>. Stop if it is <code>unknown</code>. After power-on or a reboot the reader reports <code>initializing</code> while it prepares the RFID module.</li><li>Call <code>lease.acquire</code>. Send <code>lease.renew</code> about every 1000 ms with the same <code>lease_id</code>. The SDK renews automatically while it holds the lease.</li><li>Read or apply RF settings with <code>module.call</code>. Wait for <code>idle</code> between operations.</li><li>Call <code>inventory.start</code> with a new UUID. Consume <code>inventory.tags</code> and <code>inventory.state</code> on the same connection.</li><li>Call <code>inventory.stop</code> or let <code>max_duration_ms</code> end the session. Wait for <code>inventory.state</code> with <code>state</code> <code>finished</code>, confirm <code>status.get.state</code> is <code>idle</code> and check that every <code>seq</code> from 1 to <code>last_seq</code> arrived.</li><li>Call <code>lease.release</code> when finished. Close the connection to let another application connect.</li></ol>
+<ol><li>Connect and call <code>hello</code>. Verify <code>api_major</code>, <code>board_id</code> and the advertised capabilities.</li><li>Poll <code>status.get</code> until <code>state</code> is <code>idle</code>. Stop if it is <code>unknown</code>. After power-on or a reboot the reader reports <code>initializing</code> while it prepares the RFID module.</li><li>Call <code>lease.acquire</code>. Send <code>lease.renew</code> about every 1000 ms with the same <code>lease_id</code>. The SDK renews automatically while it holds the lease.</li><li>Read or apply RF settings with <code>module.call</code>. Wait for <code>idle</code> between operations.</li><li>Call <code>inventory.start</code> with a new UUID. Consume <code>inventory.tags</code> and <code>inventory.state</code> on the same connection.</li><li>Call <code>inventory.stop</code> or let <code>max_duration_ms</code> end the session. Wait for <code>inventory.state</code> with <code>state</code> <code>finished</code>, confirm <code>status.get.state</code> is <code>idle</code> and check that every <code>seq</code> from 1 to <code>last_seq</code> arrived.</li><li>Call <code>lease.release</code> when finished. Close the connection to let another application connect.</li></ol>
 <p>Closing the connection or letting the lease expire asks the reader to stop an active inventory. After reconnecting, read <code>status.get</code> to check the RF state and session outcome. The reader does not replay missed tag reports.</p>
 <ul><li><a href="#python">Minimal client in Python that follows this sequence</a></li></ul>
 </section>
@@ -62,7 +58,7 @@
 <ul><li><a href="radio.html#operations">RFID module operations and RF parameters</a></li><li><a href="#events">Notifications</a></li><li><a href="#states">States, outcomes and reasons</a></li><li><a href="#errors">Error codes</a></li></ul>
 </section>
 <section id="m-hello"><h2>hello</h2>
-<div class="api-columns"><div><p>Returns the reader identity, the protocol limits and the feature list. Call it first on every new connection.</p><p><strong>.NET SDK:</strong> <code>ReaderClient.ConnectAsync()</code> → <code>ReaderHello</code>, also kept in <code>ReaderClient.Identity</code>. <strong>Lease:</strong> not required. <strong>Reader state:</strong> any.</p><p><strong>Parameters:</strong> none. Send <code>params</code> as <code>{}</code>.</p><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col">Result field</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="Result field"><code>api_major</code>, <code>api_minor</code></td><td data-label="Type">integer</td><td data-label="Description">Control API version. Firmware 0.5.0 reports 1 and 4. Do not continue with another major.</td></tr><tr><td data-label="Result field"><code>firmware</code></td><td data-label="Type">string</td><td data-label="Description">Running firmware version. A production reader for this release reports <code>0.5.0</code>.</td></tr><tr><td data-label="Result field"><code>board_id</code>, <code>boot_id</code></td><td data-label="Type">string</td><td data-label="Description">Device identity and the identity of this boot.</td></tr><tr><td data-label="Result field"><code>antenna_ports</code></td><td data-label="Type">integer</td><td data-label="Description">Number of antenna ports: 4.</td></tr><tr><td data-label="Result field"><code>module_family</code></td><td data-label="Type">string</td><td data-label="Description">RFID module family: <code>nation</code>.</td></tr><tr><td data-label="Result field"><code>module_operations</code></td><td data-label="Type">string[]</td><td data-label="Description">Operation names accepted by <code>module.call</code>.</td></tr><tr><td data-label="Result field"><code>capabilities</code></td><td data-label="Type">string[]</td><td data-label="Description">Features of this firmware. <code>network_config</code> and <code>signed_ota</code>: the network and OTA methods. <code>module_configuration</code>: <code>module.call</code>. <code>epc_tid</code> and <code>tid_only</code>: the <code>data</code> values <code>epc_tid</code> and <code>tid</code> of <code>inventory.start</code>. <code>bounded_session</code>, <code>scenario</code> and <code>volatile_power</code>: always present in API v1.4.</td></tr><tr><td data-label="Result field"><code>max_message_bytes</code></td><td data-label="Type">integer</td><td data-label="Description">Largest JSON message in either direction: 8192.</td></tr><tr><td data-label="Result field"><code>operation_history_size</code>, <code>operation_retention_ms</code></td><td data-label="Type">integer</td><td data-label="Description">Inventory intents kept for retry by UUID: 64 entries, at least 60000 ms.</td></tr><tr><td data-label="Result field"><code>module_history_size</code>, <code>module_retention_ms</code></td><td data-label="Type">integer</td><td data-label="Description">Module mutation results kept for <code>module.result</code>: 32 entries, at least 60000 ms.</td></tr><tr><td data-label="Result field"><code>power_limit_dbm</code></td><td data-label="Type">integer</td><td data-label="Description">Ceiling per antenna. 20 in the standard build.</td></tr><tr><td data-label="Result field"><code>state</code>, <code>reason</code>, <code>owned</code>, <code>power_dbm</code>, <code>config_op_id</code>, <code>input_errors</code>, <code>session</code></td><td data-label="Type"></td><td data-label="Description">Same as <code>status.get</code>.</td></tr></tbody></table></div><p><strong>Errors:</strong> none specific to this method.</p></div><div><div class="sample"><div class="samplebar"><span>JSON · request</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+<div class="api-columns"><div><p>Returns the reader identity, the protocol limits and the feature list. Call it first on every new connection.</p><p><strong>.NET SDK:</strong> <code>ReaderClient.ConnectAsync()</code> → <code>ReaderHello</code>, also kept in <code>ReaderClient.Identity</code>. <strong>Lease:</strong> not required. <strong>Reader state:</strong> any.</p><p><strong>Parameters:</strong> none. Send <code>params</code> as <code>{}</code>.</p><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col">Result field</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="Result field"><code>api_major</code>, <code>api_minor</code></td><td data-label="Type">integer</td><td data-label="Description">Firmware 0.6.1 reports major 1 and minor 6. Verify the major version before sending control requests.</td></tr><tr><td data-label="Result field"><code>firmware</code></td><td data-label="Type">string</td><td data-label="Description">Running firmware version. A production reader for this release reports <code>0.6.1</code>.</td></tr><tr><td data-label="Result field"><code>board_id</code>, <code>boot_id</code></td><td data-label="Type">string</td><td data-label="Description">Device identity and the identity of this boot.</td></tr><tr><td data-label="Result field"><code>antenna_ports</code></td><td data-label="Type">integer</td><td data-label="Description">Number of antenna ports: 4.</td></tr><tr><td data-label="Result field"><code>module_family</code></td><td data-label="Type">string</td><td data-label="Description">RFID module family: <code>nation</code>.</td></tr><tr><td data-label="Result field"><code>module_operations</code></td><td data-label="Type">string[]</td><td data-label="Description">Operation names accepted by <code>module.call</code>.</td></tr><tr><td data-label="Result field"><code>capabilities</code></td><td data-label="Type">string[]</td><td data-label="Description">Features of this firmware. <code>network_config</code> and <code>signed_ota</code>: the network and OTA methods. <code>module_configuration</code>: <code>module.call</code>. <code>epc_tid</code> and <code>tid_only</code>: the <code>data</code> values <code>epc_tid</code> and <code>tid</code> of <code>inventory.start</code>. <code>bounded_session</code>, <code>scenario</code> and <code>volatile_power</code>: always present in API v1.6.</td></tr><tr><td data-label="Result field"><code>max_message_bytes</code></td><td data-label="Type">integer</td><td data-label="Description">Largest JSON message in either direction: 8192.</td></tr><tr><td data-label="Result field"><code>operation_history_size</code>, <code>operation_retention_ms</code></td><td data-label="Type">integer</td><td data-label="Description">Inventory intents kept for retry by UUID: 64 entries, at least 60000 ms.</td></tr><tr><td data-label="Result field"><code>module_history_size</code>, <code>module_retention_ms</code></td><td data-label="Type">integer</td><td data-label="Description">Module mutation results kept for <code>module.result</code>: 32 entries, at least 60000 ms.</td></tr><tr><td data-label="Result field"><code>power_limit_dbm</code></td><td data-label="Type">integer</td><td data-label="Description">Ceiling per antenna. 20 in the standard build.</td></tr><tr><td data-label="Result field"><code>state</code>, <code>reason</code>, <code>owned</code>, <code>power_dbm</code>, <code>config_op_id</code>, <code>input_errors</code>, <code>session</code></td><td data-label="Type"></td><td data-label="Description">Same as <code>status.get</code>.</td></tr></tbody></table></div><p><strong>Errors:</strong> none specific to this method.</p></div><div><div class="sample"><div class="samplebar"><span>JSON · request</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
   &quot;jsonrpc&quot;: &quot;2.0&quot;,
   &quot;id&quot;: 3,
   &quot;method&quot;: &quot;hello&quot;,
@@ -81,8 +77,8 @@
     &quot;owned&quot;: false,
     &quot;input_errors&quot;: 0,
     &quot;api_major&quot;: 1,
-    &quot;api_minor&quot;: 4,
-    &quot;firmware&quot;: &quot;0.5.0&quot;,
+    &quot;api_minor&quot;: 6,
+    &quot;firmware&quot;: &quot;0.6.1&quot;,
     &quot;antenna_ports&quot;: 4,
     &quot;module_family&quot;: &quot;nation&quot;,
     &quot;module_operations&quot;: [
@@ -390,7 +386,7 @@
 }</code></pre></div></div></div>
 </section>
 <section id="m-network-get"><h2>network.get</h2>
-<div class="api-columns"><div><p>Returns the Ethernet profile in use, the saved profile for the next boot and the address in effect. Available when <code>hello.capabilities</code> contains <code>network_config</code>.</p><p><strong>.NET SDK:</strong> <code>ReaderClient.GetNetworkAsync()</code> → <code>NetworkStatus</code>. <strong>Lease:</strong> not required. <strong>Reader state:</strong> any.</p><p><strong>Parameters:</strong> none. Send <code>params</code> as <code>{}</code>.</p><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col">Result field</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="Result field"><code>running</code></td><td data-label="Type">object</td><td data-label="Description">Profile used since this boot. Object with <code>dhcp</code>, <code>port</code>, <code>address</code>, <code>netmask</code>, <code>gateway</code>.</td></tr><tr><td data-label="Result field"><code>saved</code></td><td data-label="Type">object</td><td data-label="Description">Profile that the next boot will use. Same fields.</td></tr><tr><td data-label="Result field"><code>stored_in_nvs</code></td><td data-label="Type">boolean</td><td data-label="Description">True when a saved profile exists. False means the build default applies.</td></tr><tr><td data-label="Result field"><code>restart_required</code></td><td data-label="Type">boolean</td><td data-label="Description">True when <code>saved</code> differs from <code>running</code>.</td></tr><tr><td data-label="Result field"><code>mac</code></td><td data-label="Type">string</td><td data-label="Description">Ethernet MAC, lowercase with colons.</td></tr><tr><td data-label="Result field"><code>poe_type2_asserted</code></td><td data-label="Type">boolean</td><td data-label="Description">PoE Type 2 signal on the board input.</td></tr><tr><td data-label="Result field"><code>link_up</code></td><td data-label="Type">boolean</td><td data-label="Description">Ethernet interface is up.</td></tr><tr><td data-label="Result field"><code>effective_address</code>, <code>effective_netmask</code>, <code>effective_gateway</code></td><td data-label="Type">string</td><td data-label="Description">IPv4 values in use now, including a DHCP lease. <code>0.0.0.0</code> while the link is down.</td></tr></tbody></table></div><p><strong>Errors:</strong> none specific to this method.</p></div><div><div class="sample"><div class="samplebar"><span>JSON · request</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+<div class="api-columns"><div><p>Returns the Ethernet profile in use, the saved profile for the next boot and the address in effect. Available when <code>hello.capabilities</code> contains <code>network_config</code>.</p><p><strong>.NET SDK:</strong> <code>ReaderClient.GetNetworkAsync()</code> → <code>NetworkStatus</code>. <strong>Lease:</strong> not required. <strong>Reader state:</strong> any.</p><p><strong>Parameters:</strong> none. Send <code>params</code> as <code>{}</code>.</p><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col">Result field</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="Result field"><code>running</code></td><td data-label="Type">object</td><td data-label="Description">Profile used since this boot. Object with <code>dhcp</code>, <code>port</code>, <code>address</code>, <code>netmask</code>, <code>gateway</code>.</td></tr><tr><td data-label="Result field"><code>saved</code></td><td data-label="Type">object</td><td data-label="Description">Profile that the next boot will use. Same fields.</td></tr><tr><td data-label="Result field"><code>stored_in_nvs</code></td><td data-label="Type">boolean</td><td data-label="Description">True when a saved profile exists. False means the build default applies.</td></tr><tr><td data-label="Result field"><code>restart_required</code></td><td data-label="Type">boolean</td><td data-label="Description">True when <code>saved</code> differs from <code>running</code>.</td></tr><tr><td data-label="Result field"><code>mac</code></td><td data-label="Type">string</td><td data-label="Description">Ethernet MAC, lowercase with colons.</td></tr><tr><td data-label="Result field"><code>poe_type2_asserted</code></td><td data-label="Type">boolean</td><td data-label="Description">PoE Type 2 signal on the board input.</td></tr><tr><td data-label="Result field"><code>link_up</code></td><td data-label="Type">boolean</td><td data-label="Description">Ethernet interface is up.</td></tr><tr><td data-label="Result field"><code>effective_address</code>, <code>effective_netmask</code>, <code>effective_gateway</code></td><td data-label="Type">string</td><td data-label="Description">IPv4 values in use now, including a DHCP lease. <code>0.0.0.0</code> while the link is down.</td></tr><tr><td data-label="Result field"><code>address_source</code></td><td data-label="Type">string</td><td data-label="Description">Source of the effective IPv4 address: <code>waiting</code>, <code>dhcp</code>, <code>link_local</code> or <code>static</code>. Read with <code>effective_address</code>.</td></tr></tbody></table></div><p><strong>Errors:</strong> none specific to this method.</p></div><div><div class="sample"><div class="samplebar"><span>JSON · request</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
   &quot;jsonrpc&quot;: &quot;2.0&quot;,
   &quot;id&quot;: 16,
   &quot;method&quot;: &quot;network.get&quot;,
@@ -420,12 +416,13 @@
     &quot;link_up&quot;: true,
     &quot;effective_address&quot;: &quot;192.168.77.2&quot;,
     &quot;effective_netmask&quot;: &quot;255.255.255.0&quot;,
-    &quot;effective_gateway&quot;: &quot;0.0.0.0&quot;
+    &quot;effective_gateway&quot;: &quot;0.0.0.0&quot;,
+    &quot;address_source&quot;: &quot;static&quot;
   }
 }</code></pre></div></div></div>
 </section>
 <section id="m-network-set"><h2>network.set</h2>
-<div class="api-columns"><div><p>Saves one Ethernet profile. The running connection is not changed. The new profile takes effect at the next boot.</p><p><strong>.NET SDK:</strong> <code>ReaderClient.SaveNetworkAsync(NetworkProfile)</code> → <code>NetworkStatus</code>. The SDK acquires the lease. <strong>Lease:</strong> required. <strong>Reader state:</strong> <code>idle</code>.</p><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col">Parameter</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="Parameter"><code>lease_id</code></td><td data-label="Type">string</td><td data-label="Description"><strong>Required.</strong> Value returned by <code>lease.acquire</code> on this connection.</td></tr><tr><td data-label="Parameter"><code>dhcp</code></td><td data-label="Type">boolean</td><td data-label="Description"><strong>Required.</strong> <code>true</code> for a DHCP client, <code>false</code> for a static address.</td></tr><tr><td data-label="Parameter"><code>port</code></td><td data-label="Type">integer</td><td data-label="Description"><strong>Required.</strong> WSS port, 1 to 65535. Factory default 8443.</td></tr><tr><td data-label="Parameter"><code>address</code></td><td data-label="Type">string</td><td data-label="Description"><strong>Required for a static address.</strong> IPv4 host address in dotted decimal.</td></tr><tr><td data-label="Parameter"><code>netmask</code></td><td data-label="Type">string</td><td data-label="Description"><strong>Required for a static address.</strong> Contiguous mask that leaves at least two host addresses, for example <code>255.255.255.0</code>.</td></tr><tr><td data-label="Parameter"><code>gateway</code></td><td data-label="Type">string</td><td data-label="Description"><strong>Required for a static address.</strong> Gateway in the same subnet, or <code>0.0.0.0</code> for none.</td></tr></tbody></table></div><p><strong>Result:</strong> the same fields as <code>network.get</code>. <code>saved</code> holds the new profile. <code>restart_required</code> is true when it differs from <code>running</code>.</p><p><strong>Errors:</strong> <code class="wrap">-32008 invalid_network_profile</code>, <code class="wrap">-32008 network_nvs_open_failed</code>, <code class="wrap">-32008 network_nvs_verify_failed</code>, <code class="wrap">-32008 maintenance_busy</code>, <code class="wrap">-32002 reader_not_idle</code>.</p><p>For DHCP send <code>lease_id</code>, <code>dhcp=true</code> and <code>port</code> only. After saving, call <code>system.reboot</code>, reconnect at the new endpoint and check <code>running</code> and the effective address.</p></div><div><div class="sample"><div class="samplebar"><span>JSON · request</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+<div class="api-columns"><div><p>Saves one Ethernet profile. The running connection is not changed. The new profile takes effect at the next boot.</p><p><strong>.NET SDK:</strong> <code>ReaderClient.SaveNetworkAsync(NetworkProfile)</code> → <code>NetworkStatus</code>. The SDK acquires the lease. <strong>Lease:</strong> required. <strong>Reader state:</strong> <code>idle</code>.</p><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col">Parameter</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="Parameter"><code>lease_id</code></td><td data-label="Type">string</td><td data-label="Description"><strong>Required.</strong> Value returned by <code>lease.acquire</code> on this connection.</td></tr><tr><td data-label="Parameter"><code>dhcp</code></td><td data-label="Type">boolean</td><td data-label="Description"><strong>Required.</strong> <code>true</code> enables Automatic (DHCP and IPv4 link-local fallback). <code>false</code> selects the supplied static profile.</td></tr><tr><td data-label="Parameter"><code>port</code></td><td data-label="Type">integer</td><td data-label="Description"><strong>Required.</strong> WSS port, 1 to 65535. Factory default 8443.</td></tr><tr><td data-label="Parameter"><code>address</code></td><td data-label="Type">string</td><td data-label="Description"><strong>Required for a static address.</strong> IPv4 host address in dotted decimal.</td></tr><tr><td data-label="Parameter"><code>netmask</code></td><td data-label="Type">string</td><td data-label="Description"><strong>Required for a static address.</strong> Contiguous mask that leaves at least two host addresses, for example <code>255.255.255.0</code>.</td></tr><tr><td data-label="Parameter"><code>gateway</code></td><td data-label="Type">string</td><td data-label="Description"><strong>Required for a static address.</strong> Gateway in the same subnet, or <code>0.0.0.0</code> for none.</td></tr></tbody></table></div><p><strong>Result:</strong> the same fields as <code>network.get</code>. <code>saved</code> holds the new profile. <code>restart_required</code> is true when it differs from <code>running</code>.</p><p><strong>Errors:</strong> <code class="wrap">-32008 invalid_network_profile</code>, <code class="wrap">-32008 network_nvs_open_failed</code>, <code class="wrap">-32008 network_nvs_verify_failed</code>, <code class="wrap">-32008 maintenance_busy</code>, <code class="wrap">-32002 reader_not_idle</code>.</p><p>For Automatic send <code>lease_id</code>, <code>dhcp=true</code> and <code>port</code>. After saving, call <code>system.reboot</code> when idle, rediscover the board and check <code>running</code>, <code>address_source</code> and <code>effective_address</code>.</p></div><div><div class="sample"><div class="samplebar"><span>JSON · request</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
   &quot;jsonrpc&quot;: &quot;2.0&quot;,
   &quot;id&quot;: 17,
   &quot;method&quot;: &quot;network.set&quot;,
@@ -462,12 +459,13 @@
     &quot;link_up&quot;: true,
     &quot;effective_address&quot;: &quot;192.168.77.2&quot;,
     &quot;effective_netmask&quot;: &quot;255.255.255.0&quot;,
-    &quot;effective_gateway&quot;: &quot;0.0.0.0&quot;
+    &quot;effective_gateway&quot;: &quot;0.0.0.0&quot;,
+    &quot;address_source&quot;: &quot;static&quot;
   }
 }</code></pre></div></div></div>
 </section>
 <section id="ota"><h2>Firmware update sequence</h2>
-<p>For a production reader, select the signed application image <code>ndn5030.bin</code>. After reboot, <code>hello.firmware</code> and <code>ota.status.running_version</code> identify the running version. For this release both report <code>0.5.0</code>.</p>
+<p>For a production reader, select the signed application image <code>ndn5030.bin</code>. After reboot, <code>hello.firmware</code> and <code>ota.status.running_version</code> identify the running version. For this release both report <code>0.6.1</code>.</p>
 <ol><li>Read <code>ota.status</code>. With RF idle and a valid lease, send <code>ota.begin</code> with the signed application file size and lowercase SHA-256 hex of the entire file.</li><li>Use the returned upload_id and exact byte offset for <code>ota.chunk</code>. Base64-encode each chunk within chunk_bytes (3072 decoded bytes). Read the acknowledged next offset. If a reply is lost, inspect <code>ota.status</code> before resuming.</li><li>Send <code>ota.finish</code> to verify and stage the image, or <code>ota.abort</code> to discard an open upload. Inactivity for 30 seconds ends an unfinished upload.</li><li>Restart with <code>system.reboot</code>. After reconnecting, use <code>ota.status</code> to compare running_version, running_elf_sha256, running_slot and boot_state with the staged result.</li></ol>
 <p>After booting a new image the reader confirms it once Ethernet, the control listener, USB and the RFID module have started and the reader is <code>idle</code>. Until then <code>boot_state</code> is <code>pending_verify</code>, and <code>inventory.start</code>, <code>module.call</code>, <code>reader.set_config</code>, <code>network.set</code>, <code>ota.begin</code> and <code>system.reboot</code> answer <code class="wrap">-32008 maintenance_busy</code>. The same applies while an upload is open and after <code>system.reboot</code> has been accepted. If this does not happen within 20 seconds, the reader restarts into the previous image.</p>
 </section>
@@ -485,7 +483,7 @@
     &quot;upload_id&quot;: &quot;&quot;,
     &quot;offset&quot;: 0,
     &quot;chunk_bytes&quot;: 3072,
-    &quot;running_version&quot;: &quot;0.5.0&quot;,
+    &quot;running_version&quot;: &quot;0.6.1&quot;,
     &quot;running_elf_sha256&quot;: &quot;9d3c0f6e2b1a48577c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b&quot;,
     &quot;running_slot&quot;: &quot;ota_0&quot;,
     &quot;boot_slot&quot;: &quot;ota_0&quot;,
@@ -511,7 +509,7 @@
     &quot;upload_id&quot;: &quot;6f2d1c0b9a8e7d6c5b4a39281706f5e4&quot;,
     &quot;offset&quot;: 0,
     &quot;chunk_bytes&quot;: 3072,
-    &quot;running_version&quot;: &quot;0.5.0&quot;,
+    &quot;running_version&quot;: &quot;0.6.1&quot;,
     &quot;running_elf_sha256&quot;: &quot;9d3c0f6e2b1a48577c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b&quot;,
     &quot;running_slot&quot;: &quot;ota_0&quot;,
     &quot;boot_slot&quot;: &quot;ota_0&quot;,
@@ -555,13 +553,13 @@
     &quot;upload_id&quot;: &quot;&quot;,
     &quot;offset&quot;: 0,
     &quot;chunk_bytes&quot;: 3072,
-    &quot;running_version&quot;: &quot;0.5.0&quot;,
+    &quot;running_version&quot;: &quot;0.6.1&quot;,
     &quot;running_elf_sha256&quot;: &quot;9d3c0f6e2b1a48577c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b&quot;,
     &quot;running_slot&quot;: &quot;ota_0&quot;,
     &quot;boot_slot&quot;: &quot;ota_1&quot;,
     &quot;boot_state&quot;: &quot;valid&quot;,
     &quot;staged_elf_sha256&quot;: &quot;41b7e2c9a6d3f08512c4e7a9b0d3f6185a2c4e6f8091b3d5e7f9a1c3b5d7e9f0&quot;,
-    &quot;staged_version&quot;: &quot;0.5.1&quot;
+    &quot;staged_version&quot;: &quot;0.6.1&quot;
   }
 }</code></pre></div></div></div>
 </section>
@@ -582,7 +580,7 @@
     &quot;upload_id&quot;: &quot;&quot;,
     &quot;offset&quot;: 0,
     &quot;chunk_bytes&quot;: 3072,
-    &quot;running_version&quot;: &quot;0.5.0&quot;,
+    &quot;running_version&quot;: &quot;0.6.1&quot;,
     &quot;running_elf_sha256&quot;: &quot;9d3c0f6e2b1a48577c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b&quot;,
     &quot;running_slot&quot;: &quot;ota_0&quot;,
     &quot;boot_slot&quot;: &quot;ota_0&quot;,
@@ -606,7 +604,7 @@
     &quot;upload_id&quot;: &quot;&quot;,
     &quot;offset&quot;: 0,
     &quot;chunk_bytes&quot;: 3072,
-    &quot;running_version&quot;: &quot;0.5.0&quot;,
+    &quot;running_version&quot;: &quot;0.6.1&quot;,
     &quot;running_elf_sha256&quot;: &quot;9d3c0f6e2b1a48577c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b&quot;,
     &quot;running_slot&quot;: &quot;ota_0&quot;,
     &quot;boot_slot&quot;: &quot;ota_0&quot;,
@@ -700,117 +698,10 @@
 <p>The SDK raises <code>ReaderRpcException</code> with <code>Code</code> and <code>Message</code> for these replies. Handle each code by its action in Diagnostics and recovery.</p>
 <ul><li><a href="diagnostics.html#rpc-errors">Actions for each error code</a></li></ul>
 </section>
-<section id="python"><h2>Minimal client in Python</h2>
-<div class="sample"><div class="samplebar"><span>Python</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>&quot;&quot;&quot;Minimal NDN5030 Control API client: read tags on ANT1 for three seconds over WSS.
-
-Usage:    python ndn5030_scan.py 192.168.77.2 host.json
-Requires: Python 3.10 or later, pip install &quot;websockets&gt;=13&quot;
-&quot;&quot;&quot;
-import asyncio
-import hashlib
-import json
-import ssl
-import sys
-import uuid
-
-from websockets.asyncio.client import connect
-
-
-class Reader:
-    &quot;&quot;&quot;Match replies by id and keep notifications in arrival order.&quot;&quot;&quot;
-
-    def __init__(self, websocket):
-        self.websocket, self.next_id, self.replies = websocket, 0, {}
-        self.events = asyncio.Queue()
-        self.receiver = asyncio.create_task(self.receive())
-
-    async def receive(self):
-        async for text in self.websocket:
-            message = json.loads(text)
-            if &quot;method&quot; in message:
-                self.events.put_nowait(message)
-            elif message.get(&quot;id&quot;) in self.replies:
-                self.replies.pop(message[&quot;id&quot;]).set_result(message)
-
-    async def call(self, method, **params):
-        self.next_id += 1
-        reply = self.replies[self.next_id] = asyncio.get_running_loop().create_future()
-        request = {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: self.next_id, &quot;method&quot;: method, &quot;params&quot;: params}
-        await self.websocket.send(json.dumps(request))
-        message = await asyncio.wait_for(reply, 5)
-        if &quot;error&quot; in message:
-            error = message[&quot;error&quot;]
-            raise RuntimeError(f&quot;{method}: {error[&#x27;code&#x27;]} {error[&#x27;message&#x27;]}&quot;)
-        return message[&quot;result&quot;]
-
-
-def pinned_tls(host, port, fingerprint):
-    &quot;&quot;&quot;Trust only the reader certificate whose SHA-256 is stored in host.json.&quot;&quot;&quot;
-    pem = ssl.get_server_certificate((host, port))
-    if hashlib.sha256(ssl.PEM_cert_to_DER_cert(pem)).hexdigest() != fingerprint.lower():
-        raise SystemExit(&quot;The reader certificate does not match host.json.&quot;)
-    tls = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-    tls.check_hostname = False
-    tls.load_verify_locations(cadata=pem)
-    return tls
-
-
-async def renew(reader, lease):
-    while True:
-        await asyncio.sleep(1)
-        await reader.call(&quot;lease.renew&quot;, lease_id=lease)
-
-
-async def scan(host, port, credential):
-    tls = pinned_tls(host, port, credential[&quot;certificate_sha256&quot;])
-    headers = {&quot;Authorization&quot;: &quot;Bearer &quot; + credential[&quot;token&quot;]}
-    url = f&quot;wss://{host}:{port}/v1/control&quot;
-    async with connect(url, ssl=tls, additional_headers=headers) as websocket:
-        reader = Reader(websocket)
-        hello = await reader.call(&quot;hello&quot;)
-        if hello[&quot;api_major&quot;] != 1:
-            raise SystemExit(&quot;Unsupported Control API version.&quot;)
-        print(hello[&quot;board_id&quot;], &quot;firmware&quot;, hello[&quot;firmware&quot;])
-
-        while (state := (await reader.call(&quot;status.get&quot;))[&quot;state&quot;]) != &quot;idle&quot;:
-            if state == &quot;unknown&quot;:
-                raise SystemExit(&quot;Reader fault. Power-cycle the reader.&quot;)
-            await asyncio.sleep(0.1)
-
-        lease = (await reader.call(&quot;lease.acquire&quot;))[&quot;lease_id&quot;]
-        renewal = asyncio.create_task(renew(reader, lease))
-        try:
-            await reader.call(&quot;inventory.start&quot;, lease_id=lease, op_id=str(uuid.uuid4()),
-                              mode=&quot;scenario&quot;, antenna_sequence=[1], max_duration_ms=3000,
-                              data=&quot;epc_tid&quot;)
-            received, final = set(), None
-            # The final state can arrive before the last tags. Read until last_seq is reached.
-            while final is None or len(received) &lt; final[&quot;last_seq&quot;] - final[&quot;reported_drops&quot;]:
-                event = await asyncio.wait_for(reader.events.get(), 6)
-                data = event[&quot;params&quot;]
-                if event[&quot;method&quot;] == &quot;inventory.tags&quot;:
-                    received.add(data[&quot;seq&quot;])
-                    print(data[&quot;seq&quot;], data[&quot;antenna&quot;], data.get(&quot;epc_hex&quot;), data.get(&quot;tid_hex&quot;))
-                elif event[&quot;method&quot;] == &quot;inventory.state&quot;:
-                    if data[&quot;state&quot;] in (&quot;finished&quot;, &quot;unknown&quot;):
-                        final = data
-            while (status := await reader.call(&quot;status.get&quot;))[&quot;state&quot;] == &quot;stopping&quot;:
-                await asyncio.sleep(0.05)
-            complete = (final[&quot;state&quot;] == &quot;finished&quot; and final[&quot;outcome&quot;] == &quot;success&quot;
-                        and final[&quot;reported_drops&quot;] == 0 and final[&quot;input_errors&quot;] == 0
-                        and received == set(range(1, final[&quot;last_seq&quot;] + 1))
-                        and status[&quot;state&quot;] == &quot;idle&quot;)
-            print(final[&quot;reason&quot;], f&quot;{len(received)}/{final[&#x27;last_seq&#x27;]}&quot;, f&quot;complete={complete}&quot;)
-        finally:
-            renewal.cancel()
-            await reader.call(&quot;lease.release&quot;, lease_id=lease)
-
-
-if __name__ == &quot;__main__&quot;:
-    with open(sys.argv[2], encoding=&quot;utf-8&quot;) as file:
-        credential = json.load(file)
-    asyncio.run(scan(sys.argv[1], int(sys.argv[3]) if len(sys.argv) &gt; 3 else 8443, credential))</code></pre></div>
+<section id="python"><h2>Python Ethernet example</h2>
+<div class="api-columns"><div><p>Use Python 3.11+ on the same LAN. Disconnect TCPHost from this board. The packaged example verifies the board ID and certificate, reads RF configuration and inventories ANT1 in EPC + TID mode for 1200 ms. Replace the example address and board ID with the values from discovery.</p><ul><li><a href="downloads/read-tags.py">Download read-tags.py</a></li></ul><p>Each observation includes its sequence and available EPC/TID. The example checks the final session ID, sequence and drop counters before reporting completion.</p></div><div><div class="sample"><div class="samplebar"><span>Shell</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>python -m pip install &quot;websockets&gt;=14&quot;
+python read-tags.py 192.168.77.2 --board-id ndn5030-0123456789ab</code></pre></div></div></div>
 </section>
 <nav class="pager" aria-label="Documentation navigation"><a href="rest.html"><small>Previous</small>← Gateway REST API</a><a class="next" href="radio.html"><small>Next</small>RF configuration →</a></nav></main>
-<nav class="toc" aria-label="On this page"><h2>On this page</h2><span class="toc-group">Protocol</span><a href="#hello">Transport and identification</a><a href="#serial">USB COM protocol</a><a href="#lease">Control sequence</a><a href="#conventions">Request and response conventions</a><span class="toc-group">Methods</span><a href="#methods">Method index</a><a href="#m-hello">hello</a><a href="#m-status-get">status.get</a><a href="#m-lease-acquire">lease.acquire</a><a href="#m-lease-renew">lease.renew</a><a href="#m-lease-release">lease.release</a><a href="#m-reader-get-config">reader.get_config</a><a href="#m-reader-set-config">reader.set_config</a><a href="#m-module-call">module.call</a><a href="#m-module-result">module.result</a><a href="#m-inventory-start">inventory.start</a><a href="#m-inventory-stop">inventory.stop</a><a href="#m-network-get">network.get</a><a href="#m-network-set">network.set</a><a href="#ota">Firmware update sequence</a><a href="#m-ota-status">ota.status</a><a href="#m-ota-begin">ota.begin</a><a href="#m-ota-chunk">ota.chunk</a><a href="#m-ota-finish">ota.finish</a><a href="#m-ota-abort">ota.abort</a><a href="#m-system-reboot">system.reboot</a><span class="toc-group">Notifications</span><a href="#events">Notifications</a><a href="#e-inventory-tags">inventory.tags</a><a href="#e-inventory-state">inventory.state</a><a href="#e-health">health</a><span class="toc-group">Reference</span><a href="#states">States, outcomes and reasons</a><a href="#errors">Error codes</a><a href="#python">Minimal client in Python</a></nav>
+<nav class="toc" aria-label="On this page"><h2>On this page</h2><span class="toc-group">Protocol</span><a href="#hello">Transport and identification</a><a href="#serial">USB COM protocol</a><a href="#lease">Control sequence</a><a href="#conventions">Request and response conventions</a><span class="toc-group">Methods</span><a href="#methods">Method index</a><a href="#m-hello">hello</a><a href="#m-status-get">status.get</a><a href="#m-lease-acquire">lease.acquire</a><a href="#m-lease-renew">lease.renew</a><a href="#m-lease-release">lease.release</a><a href="#m-reader-get-config">reader.get_config</a><a href="#m-reader-set-config">reader.set_config</a><a href="#m-module-call">module.call</a><a href="#m-module-result">module.result</a><a href="#m-inventory-start">inventory.start</a><a href="#m-inventory-stop">inventory.stop</a><a href="#m-network-get">network.get</a><a href="#m-network-set">network.set</a><a href="#ota">Firmware update sequence</a><a href="#m-ota-status">ota.status</a><a href="#m-ota-begin">ota.begin</a><a href="#m-ota-chunk">ota.chunk</a><a href="#m-ota-finish">ota.finish</a><a href="#m-ota-abort">ota.abort</a><a href="#m-system-reboot">system.reboot</a><span class="toc-group">Notifications</span><a href="#events">Notifications</a><a href="#e-inventory-tags">inventory.tags</a><a href="#e-inventory-state">inventory.state</a><a href="#e-health">health</a><span class="toc-group">Reference</span><a href="#states">States, outcomes and reasons</a><a href="#errors">Error codes</a><a href="#python">Python Ethernet example</a></nav>
 </div></body></html>
