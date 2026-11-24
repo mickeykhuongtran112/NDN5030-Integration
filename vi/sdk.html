@@ -25,12 +25,13 @@
 <header class="pagehead"><h1>.NET SDK trực tiếp</h1><p class="lead">Tích hợp Ndn5030.Client 0.8.2 vào ứng dụng .NET 10. Một ReaderClient giữ kết nối tới một reader.</p></header>
 <details class="inline-toc"><summary>Trong trang này</summary><nav aria-label="Trong trang này"><a href="#install">Cài package</a><a href="#scan">Ví dụ inventory có giới hạn</a><a href="#ready">Chờ reader sẵn sàng</a><a href="#configuration">Lệnh cấu hình</a><a href="#functions">Tra cứu hàm ReaderClient</a><a href="#exceptions">Ngoại lệ và timeout</a><a href="#multi-reader">Nhiều reader đồng thời</a></nav></details>
 <section id="install"><h2>Cài package</h2>
-<p>Tạo project console .NET 10, hoặc bắt đầu từ project có sẵn trong thư mục <code>sdk\ReadTags</code> của gói. Thêm thư mục <code>sdk</code> của gói đã giải nén làm nguồn NuGet cục bộ; thay đường dẫn bên dưới bằng đường dẫn của bạn. <code>Ndn5030.Client</code> phụ thuộc System.IO.Ports 10.0.0, nên nuget.org hoặc feed nội bộ của bạn cũng phải truy cập được khi restore.</p>
+<p>Dùng .NET 10 và gói NuGet <code>Ndn5030.Client</code> trong thư mục <code>sdk</code> của ZIP TCPHost 0.8.2 đã giải nén. Project mẫu <code>sdk\ReadTags</code> đã tham chiếu gói và dùng <code>sdk\NuGet.Config</code>. Chạy <code class="wrap">dotnet restore</code> trong project đó. Với project console riêng, chạy các lệnh bên dưới tại thư mục project và thay đường dẫn tới gói. Bước restore cũng cần <code>System.IO.Ports</code> 10.0.0 và các gói phụ thuộc từ nuget.org hoặc nguồn NuGet nội bộ.</p>
 <div class="sample"><div class="samplebar"><span>PowerShell</span><button type="button" class="copy" hidden>Sao chép</button></div><pre><code>dotnet nuget add source &quot;D:\NDN5030\sdk&quot; --name NDN5030
 dotnet add package Ndn5030.Client --version 0.8.2</code></pre></div>
 </section>
 <section id="scan"><h2>Ví dụ inventory có giới hạn</h2>
 <p>Lưu đoạn sau vào <code>Program.cs</code>. Đối số đầu là địa chỉ reader: URL WSS khi dùng Ethernet, hoặc tên cổng USB COM như COM7. Đối số thứ hai là đường dẫn tệp <code>host.json</code> của reader. Callback tag được gọi từ vòng lặp SDK nhận thông báo của reader, nên cần trả về nhanh.</p>
+<p>Trong gói 0.8.2 đã phát hành, đối số thứ ba nếu truyền theo vị trí cho <code>InventoryRequest</code> là <code>ScanTime100Ms</code>. Với reader này, giữ giá trị mặc định là 3. Truyền thời hạn gửi lệnh dừng theo tên, ví dụ <code class="wrap">MaxDurationMs: 5000</code> cho năm giây.</p>
 <div class="sample"><div class="samplebar"><span>C#</span><button type="button" class="copy" hidden>Sao chép</button></div><pre><code>using Ndn5030.Client;
 
 string endpoint = args[0];

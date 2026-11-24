@@ -25,12 +25,13 @@
 <header class="pagehead"><h1>Direct .NET SDK</h1><p class="lead">Integrate Ndn5030.Client 0.8.2 with a .NET 10 application. One ReaderClient owns one reader connection.</p></header>
 <details class="inline-toc"><summary>On this page</summary><nav aria-label="On this page"><a href="#install">Package installation</a><a href="#scan">Bounded inventory example</a><a href="#ready">Wait for the reader to be ready</a><a href="#configuration">Configuration calls</a><a href="#functions">ReaderClient function reference</a><a href="#exceptions">Exceptions and timeouts</a><a href="#multi-reader">Multi-reader concurrency</a></nav></details>
 <section id="install"><h2>Package installation</h2>
-<p>Create a .NET 10 console project, or start from the ready-made project in the <code>sdk\ReadTags</code> folder of the package. Add the <code>sdk</code> folder of the extracted package as a local NuGet source; replace the path below with your own. <code>Ndn5030.Client</code> depends on System.IO.Ports 10.0.0, so nuget.org or your internal feed must also be reachable during restore.</p>
+<p>Use .NET 10 and the <code>Ndn5030.Client</code> NuGet package in the <code>sdk</code> folder of the extracted TCPHost 0.8.2 ZIP. The bundled <code>sdk\ReadTags</code> project already has a package reference and uses <code>sdk\NuGet.Config</code>. Run <code class="wrap">dotnet restore</code> in that project. For your own console project, run the commands below from its directory and replace the package path. Restore also needs <code>System.IO.Ports</code> 10.0.0 and its dependencies from nuget.org or your internal feed.</p>
 <div class="sample"><div class="samplebar"><span>PowerShell</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>dotnet nuget add source &quot;D:\NDN5030\sdk&quot; --name NDN5030
 dotnet add package Ndn5030.Client --version 0.8.2</code></pre></div>
 </section>
 <section id="scan"><h2>Bounded inventory example</h2>
 <p>Save the following as <code>Program.cs</code>. The first argument is the reader address: a WSS URL for Ethernet, or a USB COM port name such as COM7. The second argument is the path of the <code>host.json</code> file of the reader. The tag callback is called from the SDK loop that receives reader notifications, so it must return quickly.</p>
+<p>In the released 0.8.2 package, the third positional argument to <code>InventoryRequest</code> is <code>ScanTime100Ms</code>. Leave it at its default of 3 for this reader. Pass the stop deadline by name, for example <code class="wrap">MaxDurationMs: 5000</code> for five seconds.</p>
 <div class="sample"><div class="samplebar"><span>C#</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>using Ndn5030.Client;
 
 string endpoint = args[0];

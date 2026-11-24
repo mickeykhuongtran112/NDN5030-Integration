@@ -209,6 +209,7 @@ components:
           maxItems: 4
           uniqueItems: true
           items: { $ref: '#/components/schemas/AntennaId' }
+        scan_time_100ms: { type: integer, minimum: 3, maximum: 255, description: "Legacy Answer round bound. Nation controls antenna switching internally." }
         max_duration_ms:
           type: integer
           minimum: 1
