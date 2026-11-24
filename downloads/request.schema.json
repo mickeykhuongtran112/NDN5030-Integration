@@ -1,0 +1,559 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ndn5030:device:request:v1",
+  "title": "NDN5030 Nation device request v1.4",
+  "type": "object",
+  "required": [
+    "jsonrpc",
+    "id",
+    "method"
+  ],
+  "properties": {
+    "jsonrpc": {
+      "const": "2.0"
+    },
+    "id": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        }
+      ]
+    },
+    "method": {
+      "enum": [
+        "hello",
+        "status.get",
+        "lease.acquire",
+        "lease.renew",
+        "lease.release",
+        "reader.get_config",
+        "reader.set_config",
+        "inventory.start",
+        "inventory.stop",
+        "module.call",
+        "module.result",
+        "network.get",
+        "network.set",
+        "ota.status",
+        "ota.begin",
+        "ota.chunk",
+        "ota.finish",
+        "ota.abort",
+        "system.reboot"
+      ]
+    },
+    "params": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "enum": [
+              "lease.renew",
+              "lease.release"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "params"
+        ],
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/lease"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "const": "inventory.start"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "params"
+        ],
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/start"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "const": "inventory.stop"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "params"
+        ],
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/stop"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "const": "reader.set_config"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "params"
+        ],
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/power"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "const": "module.call"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "params"
+        ],
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/moduleCall"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "const": "module.result"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "params"
+        ],
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/moduleResult"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "enum": [
+              "network.set"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "params"
+        ],
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/network"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "enum": [
+              "ota.begin"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "params"
+        ],
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/otaBegin"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "enum": [
+              "ota.abort",
+              "ota.finish"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "params"
+        ],
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/otaId"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "enum": [
+              "ota.chunk"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "params"
+        ],
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/otaChunk"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "enum": [
+              "system.reboot"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "params"
+        ],
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/lease"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "lease": {
+      "type": "object",
+      "required": [
+        "lease_id"
+      ],
+      "properties": {
+        "lease_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 95
+        }
+      }
+    },
+    "operation": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "start": {
+      "type": "object",
+      "required": [
+        "lease_id",
+        "op_id",
+        "mode",
+        "antenna_sequence",
+        "max_duration_ms"
+      ],
+      "properties": {
+        "lease_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 95
+        },
+        "op_id": {
+          "$ref": "#/$defs/operation"
+        },
+        "mode": {
+          "const": "scenario"
+        },
+        "antenna_sequence": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          }
+        },
+        "max_duration_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600000
+        },
+        "data": {
+          "enum": [
+            "epc",
+            "epc_tid",
+            "tid"
+          ],
+          "default": "epc"
+        }
+      },
+      "additionalProperties": false
+    },
+    "stop": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/lease"
+        }
+      ],
+      "required": [
+        "target_start_op_id"
+      ],
+      "properties": {
+        "op_id": {
+          "$ref": "#/$defs/operation"
+        },
+        "target_start_op_id": {
+          "$ref": "#/$defs/operation"
+        }
+      }
+    },
+    "power": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/lease"
+        }
+      ],
+      "required": [
+        "op_id",
+        "power_dbm"
+      ],
+      "properties": {
+        "op_id": {
+          "$ref": "#/$defs/operation"
+        },
+        "persist": {
+          "const": false
+        },
+        "power_dbm": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 33
+          }
+        }
+      }
+    },
+    "moduleCall": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/lease"
+        }
+      ],
+      "required": [
+        "op_id",
+        "operation",
+        "args"
+      ],
+      "properties": {
+        "op_id": {
+          "$ref": "#/$defs/operation"
+        },
+        "operation": {
+          "enum": [
+            "get_reader_info",
+            "get_serial_number",
+            "get_power",
+            "set_power",
+            "get_baseband",
+            "set_baseband",
+            "get_rf_band",
+            "set_rf_band",
+            "get_working_frequency",
+            "set_working_frequency",
+            "write_epc",
+            "get_filter_settings",
+            "set_filter_settings"
+          ]
+        },
+        "args": {
+          "type": "object",
+          "description": "Arguments of the selected operation. See the RF configuration page of the documentation."
+        }
+      }
+    },
+    "moduleResult": {
+      "type": "object",
+      "required": [
+        "op_id"
+      ],
+      "properties": {
+        "op_id": {
+          "$ref": "#/$defs/operation"
+        }
+      }
+    },
+    "network": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/lease"
+        },
+        {
+          "if": {
+            "properties": {
+              "dhcp": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "address",
+              "netmask",
+              "gateway"
+            ]
+          }
+        }
+      ],
+      "type": "object",
+      "required": [
+        "dhcp",
+        "port"
+      ],
+      "properties": {
+        "dhcp": {
+          "type": "boolean"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "address": {
+          "type": "string",
+          "maxLength": 15
+        },
+        "netmask": {
+          "type": "string",
+          "maxLength": 15
+        },
+        "gateway": {
+          "type": "string",
+          "maxLength": 15
+        }
+      }
+    },
+    "otaBegin": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/lease"
+        }
+      ],
+      "type": "object",
+      "required": [
+        "size",
+        "sha256"
+      ],
+      "properties": {
+        "size": {
+          "type": "integer",
+          "minimum": 288,
+          "maximum": 3670016
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "otaId": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/lease"
+        }
+      ],
+      "type": "object",
+      "required": [
+        "upload_id"
+      ],
+      "properties": {
+        "upload_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        }
+      }
+    },
+    "otaChunk": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/otaId"
+        }
+      ],
+      "required": [
+        "offset",
+        "data"
+      ],
+      "properties": {
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3670016
+        },
+        "data": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "maxLength": 4096,
+          "minLength": 4
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "store_id": "shop-01",
+  "listen_url": "https://localhost:7443",
+  "database": "./data/scans.db",
+  "journal_hours": 24,
+  "summary_days": 30,
+  "readers": [
+    {
+      "board_id": "ndn5030-0123456789ab",
+      "endpoint": "wss://192.168.77.2:8443/v1/control",
+      "identity_file": "./host.json"
+    }
+  ],
+  "integrations": [
+    {
+      "id": "checkout-backend",
+      "token_sha256": "REPLACE_WITH_SHA256_OF_THE_INTEGRATION_TOKEN",
+      "readers": [
+        "ndn5030-0123456789ab"
+      ]
+    }
+  ]
+}

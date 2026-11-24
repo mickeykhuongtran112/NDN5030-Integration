@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RF configuration · NDN5030</title>
+<meta name="description" content="Read and set antenna power, baseband profile, session, band, hopping channels and tag report filters, and write an EPC. Each operation is listed with its .NET SDK function, arguments and result. Use the same operations through WSS and USB COM.">
+<link rel="stylesheet" href="assets/site.css">
+<script defer src="assets/index-en.js"></script>
+<script defer src="assets/site.js"></script>
+</head>
+<body class="reference-page">
+<a class="skip" href="#main">Skip to content</a>
+<div class="layout"><aside id="sidebar" class="sidebar">
+<div class="sidehead">
+<a class="brand" href="index.html"><img src="assets/nextwaves.png" alt="Nextwaves"><span><strong>NDN5030</strong><small>Developer documentation</small></span></a>
+<button class="menu" aria-controls="sidebar" aria-expanded="false">Menu</button>
+<label class="search"><span class="glass" aria-hidden="true"></span><input id="search" type="search" aria-label="Search docs" placeholder="Search docs…"><kbd aria-hidden="true">/</kbd></label>
+</div>
+<div class="sidebody">
+<div class="results" aria-label="Search results" aria-live="polite" hidden></div>
+<nav aria-label="Documentation navigation"><div class="navgroup"><h2>System overview</h2><a href="index.html">NDN5030 integration</a><a href="concepts.html">Concepts and terms</a></div><div class="navgroup"><h2>Setup and demo</h2><a href="commissioning.html">Connect to a reader</a><a href="demo.html">TCPHost function reference</a></div><div class="navgroup"><h2>Application integration</h2><a href="sdk.html">Direct .NET SDK</a><a href="gateway.html">Gateway deployment</a></div><div class="navgroup"><h2>API reference</h2><a href="rest.html">Gateway REST API</a><a href="device.html">Reader Control API</a><a class="active" aria-current="page" href="radio.html">RF configuration</a></div><div class="navgroup"><h2>Validation and recovery</h2><a href="diagnostics.html">Diagnostics and recovery</a><a href="performance.html">Validation and performance</a></div></nav>
+</div></aside>
+<main id="main"><div class="mainbar"><div class="crumb"><a href="index.html">Documentation</a><span>/</span>API reference</div>
+<nav class="language" aria-label="Language"><a href="radio.html" lang="en" hreflang="en" aria-label="English" data-language-link aria-current="true">EN</a><a href="vi/radio.html" lang="vi" hreflang="vi" aria-label="Tiếng Việt" data-language-link>VI</a></nav></div>
+<header class="pagehead"><h1>RF configuration</h1><p class="lead">Read and set antenna power, baseband profile, session, band, hopping channels and tag report filters, and write an EPC. Each operation is listed with its .NET SDK function, arguments and result. Use the same operations through WSS and USB COM.</p></header>
+<details class="inline-toc"><summary>On this page</summary><nav aria-label="On this page"><span class="toc-group">Basics</span><a href="#envelope">Module transaction envelope</a><a href="#operations">Operation reference</a><a href="#rf-setup">Apply and verify RF settings</a><span class="toc-group">Operations</span><a href="#op-identity">get_reader_info · get_serial_number</a><a href="#op-power">get_power · set_power</a><a href="#op-baseband">get_baseband · set_baseband</a><a href="#op-band">get_rf_band · set_rf_band</a><a href="#op-frequency">get_working_frequency · set_working_frequency</a><a href="#op-filter">get_filter_settings · set_filter_settings</a><a href="#op-write-epc">write_epc</a></nav></details>
+<section id="envelope"><h2>Module transaction envelope</h2>
+<div class="api-columns"><div><p>Every operation on this page is sent with <code>module.call</code>. Put the operation name in <code>operation</code> and its arguments in <code>args</code>. The reply arrives when the RFID module has answered.</p><p>A module operation needs a lease, and the reader state must be <code>idle</code>; otherwise the reader answers <code class="wrap">-32002 reader_not_idle</code>. Send a new UUID in <code>op_id</code> and an operation name listed in <code>hello.module_operations</code>. The reader waits up to 3000 ms for each reply of the RFID module. After a setter is accepted, the reader reads the value back from the RFID module and compares it with your request.</p><p>The result holds op_id, state, outcome, confirmation, reason, data and steps. confirmation tells how far the operation got: none (not sent yet), transmitted (sent, no answer), acknowledged (the RFID module answered) or read_back_verified (the value read back equals the request). If the module accepted a write but the read-back failed or differs, outcome is partial. Keep the op_id and the boot_id of the reader: with them you can ask for the result again after a lost reply.</p><div class="tablewrap" tabindex="0"><table><thead><tr><th scope="col"><code>outcome</code> · <code>confirmation</code> or <code>reason</code></th><th scope="col">Meaning and next step</th></tr></thead><tbody><tr><td data-label="outcome · confirmation or reason"><code>success</code> · <code>read_back_verified</code></td><td data-label="Meaning and next step">The module accepted the write and the value read back equals the request. Continue.</td></tr><tr><td data-label="outcome · confirmation or reason"><code>success</code> · <code>acknowledged</code></td><td data-label="Meaning and next step">A getter returned data, or the module acknowledged an EPC write. Continue. Verify an EPC write by scanning.</td></tr><tr><td data-label="outcome · confirmation or reason"><code>partial</code> · <code>readback_mismatch</code></td><td data-label="Meaning and next step">The module accepted the write but reports a different value. <code>data</code> holds the value in effect. Use that value or correct the request.</td></tr><tr><td data-label="outcome · confirmation or reason"><code>failure</code> · <code>native_rejection</code></td><td data-label="Meaning and next step">The module refused the write. Check <code>steps[].status</code> and the argument limits.</td></tr><tr><td data-label="outcome · confirmation or reason"><code>failure</code> or <code>partial</code> · <code>tag_write_failed</code></td><td data-label="Meaning and next step">The EPC write did not complete. <code>partial</code> means some words were written. Scan the tag by TID and decide whether to write again.</td></tr><tr><td data-label="outcome · confirmation or reason"><code>unknown</code></td><td data-label="Meaning and next step">The module did not answer in time. The reader state is <code>unknown</code>. See Diagnostics and recovery.</td></tr></tbody></table></div></div><div><div class="sample"><div class="samplebar"><span>JSON · request</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 21,
+  &quot;method&quot;: &quot;module.call&quot;,
+  &quot;params&quot;: {
+    &quot;lease_id&quot;: &quot;5f1c2a9e0b7d4c318e6a2f9051c3d7b4-1&quot;,
+    &quot;op_id&quot;: &quot;f3970fa1-080a-4074-8a3d-9ce65d576e05&quot;,
+    &quot;operation&quot;: &quot;set_baseband&quot;,
+    &quot;args&quot;: {
+      &quot;speed&quot;: 3,
+      &quot;q_value&quot;: 4,
+      &quot;session&quot;: 1,
+      &quot;inventory_flag&quot;: 2
+    }
+  }
+}</code></pre></div><div class="sample"><div class="samplebar"><span>JSON · response</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 21,
+  &quot;result&quot;: {
+    &quot;op_id&quot;: &quot;f3970fa1-080a-4074-8a3d-9ce65d576e05&quot;,
+    &quot;state&quot;: &quot;finished&quot;,
+    &quot;outcome&quot;: &quot;success&quot;,
+    &quot;confirmation&quot;: &quot;read_back_verified&quot;,
+    &quot;reason&quot;: &quot;&quot;,
+    &quot;data&quot;: {
+      &quot;speed&quot;: 3,
+      &quot;q_value&quot;: 4,
+      &quot;session&quot;: 1,
+      &quot;inventory_flag&quot;: 2
+    },
+    &quot;steps&quot;: [
+      {
+        &quot;command&quot;: 523,
+        &quot;status&quot;: 0,
+        &quot;raw_data_hex&quot;: &quot;00&quot;
+      },
+      {
+        &quot;command&quot;: 524,
+        &quot;status&quot;: 0,
+        &quot;raw_data_hex&quot;: &quot;03040102&quot;
+      }
+    ]
+  }
+}</code></pre></div></div></div>
+</section>
+<section id="operations"><h2>Operation reference</h2>
+<div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col">Operation</th><th scope="col">.NET SDK function</th><th scope="col">Command ID (hex)</th><th scope="col">Purpose</th></tr></thead><tbody><tr><td data-label="Operation"><code>get_reader_info</code></td><td data-label=".NET SDK function"><code>GetReaderInfoAsync</code></td><td data-label="Command ID (hex)">0100</td><td data-label="Purpose">Module serial number and time since module power-on.</td></tr><tr><td data-label="Operation"><code>get_serial_number</code></td><td data-label=".NET SDK function"><code>GetSerialNumberAsync</code></td><td data-label="Command ID (hex)">0100</td><td data-label="Purpose">Module serial number only.</td></tr><tr><td data-label="Operation"><code>get_power</code></td><td data-label=".NET SDK function"><code>GetPowerAsync</code></td><td data-label="Command ID (hex)">0202</td><td data-label="Purpose">Power of the four antennas.</td></tr><tr><td data-label="Operation"><code>set_power</code></td><td data-label=".NET SDK function"><code>SetPowerConfigurationAsync</code></td><td data-label="Command ID (hex)">0201</td><td data-label="Purpose">Set power per antenna, optionally saved in the module.</td></tr><tr><td data-label="Operation"><code>get_baseband</code></td><td data-label=".NET SDK function"><code>GetBasebandAsync</code></td><td data-label="Command ID (hex)">020C</td><td data-label="Purpose">Link profile, Q, session and target.</td></tr><tr><td data-label="Operation"><code>set_baseband</code></td><td data-label=".NET SDK function"><code>SetBasebandAsync</code></td><td data-label="Command ID (hex)">020B</td><td data-label="Purpose">Set link profile, Q, session and target.</td></tr><tr><td data-label="Operation"><code>get_rf_band</code></td><td data-label=".NET SDK function"><code>GetRfBandAsync</code></td><td data-label="Command ID (hex)">0204</td><td data-label="Purpose">Regional band.</td></tr><tr><td data-label="Operation"><code>set_rf_band</code></td><td data-label=".NET SDK function"><code>SetRfBandAsync</code></td><td data-label="Command ID (hex)">0203</td><td data-label="Purpose">Select the regional band.</td></tr><tr><td data-label="Operation"><code>get_working_frequency</code></td><td data-label=".NET SDK function"><code>GetWorkingFrequencyAsync</code></td><td data-label="Command ID (hex)">0206</td><td data-label="Purpose">Hopping mode and channel list.</td></tr><tr><td data-label="Operation"><code>set_working_frequency</code></td><td data-label=".NET SDK function"><code>SetWorkingFrequencyAsync</code></td><td data-label="Command ID (hex)">0205</td><td data-label="Purpose">Automatic hopping or a fixed channel list.</td></tr><tr><td data-label="Operation"><code>get_filter_settings</code></td><td data-label=".NET SDK function"><code>GetFilterSettingsAsync</code></td><td data-label="Command ID (hex)">020A</td><td data-label="Purpose">Tag report filter.</td></tr><tr><td data-label="Operation"><code>set_filter_settings</code></td><td data-label=".NET SDK function"><code>SetFilterSettingsAsync</code></td><td data-label="Command ID (hex)">0209</td><td data-label="Purpose">Set repeat interval and RSSI threshold.</td></tr><tr><td data-label="Operation"><code>write_epc</code></td><td data-label=".NET SDK function"><code>WriteEpcAsync</code></td><td data-label="Command ID (hex)">0211</td><td data-label="Purpose">Write a new EPC to one selected tag.</td></tr></tbody></table></div>
+<p>These thirteen names are the complete list in <code>hello.module_operations</code> for firmware 0.5.0. Each SDK function returns <code>ModuleResult</code>. <code>Decode&lt;T&gt;()</code> returns the typed <code>data</code> and, like <code>RequireSuccess()</code>, raises <code>ModuleOperationException</code> unless the outcome is <code>success</code>. For a <code>partial</code> result read <code>Data</code> on the <code>ModuleResult</code>, or <code>Result</code> on the exception. In <code>steps</code> the command ID appears in decimal, for example 020B is 523.</p>
+<p>Getters take <code>args</code> as <code>{}</code>. Setters accept exactly the listed arguments and reject any other field with <code class="wrap">-32602 invalid_or_unsupported_module_operation</code>.</p>
+</section>
+<section id="rf-setup"><h2>Apply and verify RF settings</h2>
+<ol><li>Stop inventory, verify idle and acquire a lease. Read <code>get_power</code>, <code>get_baseband</code>, <code>get_rf_band</code>, <code>get_working_frequency</code> and <code>get_filter_settings</code>.</li><li>Write power, baseband and band. Use <code>hello.power_limit_dbm</code> as the accepted ceiling per antenna. Then set the hopping channels for the active band with <code>set_working_frequency</code> and the tag report filter with <code>set_filter_settings</code>.</li><li>Require <code>outcome=success</code> and inspect <code>confirmation</code> plus <code>data</code> for each setter. Verify active values with the getter. Use a separate UUID for each mutation.</li></ol>
+<div class="tablewrap" tabindex="0"><table><thead><tr><th scope="col">module.call operation</th><th scope="col">args</th></tr></thead><tbody><tr><td data-label="module.call operation">set_power</td><td data-label="args">{&quot;power_dbm&quot;:[15,15,15,15],&quot;persist&quot;:false}</td></tr><tr><td data-label="module.call operation">set_baseband</td><td data-label="args">{&quot;speed&quot;:3,&quot;q_value&quot;:4,&quot;session&quot;:0,&quot;inventory_flag&quot;:0,&quot;persist&quot;:false}</td></tr><tr><td data-label="module.call operation">set_rf_band</td><td data-label="args">{&quot;band_code&quot;:3}</td></tr><tr><td data-label="module.call operation">set_working_frequency</td><td data-label="args">{&quot;mode&quot;:&quot;auto&quot;,&quot;persist&quot;:false}</td></tr><tr><td data-label="module.call operation">set_filter_settings</td><td data-label="args">{&quot;repeat_time_ms&quot;:0,&quot;rssi_threshold&quot;:0}</td></tr></tbody></table></div>
+<p>The values in this table are examples. Use the band, channels and power allowed by the radio regulation where the reader is installed; the limit usually applies to radiated power, so include antenna gain and cable loss. <code>hello.power_limit_dbm</code> is the hardware ceiling of the reader, not a legal limit.</p>
+<p>Send one operation at a time and wait for <code>status.get.state</code> to return to <code>idle</code> before the next one. The SDK functions wait automatically.</p>
+</section>
+<section id="op-identity"><h2>get_reader_info · get_serial_number</h2>
+<div class="api-columns"><div><p>Read the identity of the RFID module inside the reader. Use <code>hello.board_id</code> to identify the reader itself.</p><p><strong>.NET SDK:</strong> <code>GetReaderInfoAsync()</code> → <code>Decode&lt;NationReaderInfo&gt;()</code>. <code>GetSerialNumberAsync()</code> → <code>Decode&lt;string&gt;()</code>.</p><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col"><code>data</code> field</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="data field"><code>serial_number</code></td><td data-label="Type">string</td><td data-label="Description">Module serial number. <code>get_serial_number</code> returns this string directly as <code>data</code>.</td></tr><tr><td data-label="data field"><code>power_on_time_sec</code></td><td data-label="Type">integer</td><td data-label="Description">Seconds since the module was powered.</td></tr></tbody></table></div></div><div><div class="sample"><div class="samplebar"><span>JSON · args</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{}</code></pre></div><div class="sample"><div class="samplebar"><span>JSON · result of get_reader_info</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;op_id&quot;: &quot;f3970fa1-080a-4074-8a3d-9ce65d576e00&quot;,
+  &quot;state&quot;: &quot;finished&quot;,
+  &quot;outcome&quot;: &quot;success&quot;,
+  &quot;confirmation&quot;: &quot;acknowledged&quot;,
+  &quot;reason&quot;: &quot;&quot;,
+  &quot;data&quot;: {
+    &quot;serial_number&quot;: &quot;N704000001234500A1B2&quot;,
+    &quot;power_on_time_sec&quot;: 123
+  },
+  &quot;steps&quot;: [
+    {
+      &quot;command&quot;: 256,
+      &quot;status&quot;: 0,
+      &quot;raw_data_hex&quot;: &quot;00144E373034303030303031323334353030413142320000007B0000&quot;
+    }
+  ]
+}</code></pre></div></div></div>
+</section>
+<section id="op-power"><h2>get_power · set_power</h2>
+<div class="api-columns"><div><p>Read or set the transmit power of each antenna port. <code>set_power</code> writes the four values and reads them back.</p><p><strong>.NET SDK:</strong> <code>GetPowerAsync()</code> → <code>Decode&lt;int[]&gt;()</code>. <code class="wrap">SetPowerConfigurationAsync(int[] powerDbm, bool persist = false)</code>.</p><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col">Argument</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="Argument"><code>power_dbm</code></td><td data-label="Type">integer[4]</td><td data-label="Description"><strong>Required.</strong> ANT1 to ANT4 in dBm. Each value from 0 to <code>hello.power_limit_dbm</code>.</td></tr><tr><td data-label="Argument"><code>persist</code></td><td data-label="Type">boolean</td><td data-label="Description">Optional. <code>true</code> saves the values in the RFID module so they survive a power cycle. With <code>false</code> (default) they apply until the reader is powered off; apply them again after each power-up.</td></tr></tbody></table></div><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col"><code>data</code> field</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="data field"><code>data</code></td><td data-label="Type">integer[4]</td><td data-label="Description">Power in effect, ANT1 to ANT4.</td></tr></tbody></table></div><p>A value above the ceiling is refused with <code class="wrap">-32003 power_limited</code> before anything is sent to the module; a value above 33 or a non-integer is refused with <code class="wrap">-32602 invalid_or_unsupported_module_operation</code>. The SDK function checks the ceiling itself and throws <code>ArgumentOutOfRangeException</code>. The same ceiling applies to saved values.</p></div><div><div class="sample"><div class="samplebar"><span>JSON · args of set_power</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;power_dbm&quot;: [15, 15, 15, 15],
+  &quot;persist&quot;: false
+}</code></pre></div><div class="sample"><div class="samplebar"><span>JSON · result</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;op_id&quot;: &quot;f3970fa1-080a-4074-8a3d-9ce65d576e03&quot;,
+  &quot;state&quot;: &quot;finished&quot;,
+  &quot;outcome&quot;: &quot;success&quot;,
+  &quot;confirmation&quot;: &quot;read_back_verified&quot;,
+  &quot;reason&quot;: &quot;&quot;,
+  &quot;data&quot;: [15, 15, 15, 15],
+  &quot;steps&quot;: [
+    {
+      &quot;command&quot;: 513,
+      &quot;status&quot;: 0,
+      &quot;raw_data_hex&quot;: &quot;00&quot;
+    },
+    {
+      &quot;command&quot;: 514,
+      &quot;status&quot;: 0,
+      &quot;raw_data_hex&quot;: &quot;010F020F030F040F&quot;
+    }
+  ]
+}</code></pre></div></div></div>
+</section>
+<section id="op-baseband"><h2>get_baseband · set_baseband</h2>
+<div class="api-columns"><div><p>Read or set the air-interface settings used by the next inventory: link profile, Q, session and target.</p><p><strong>.NET SDK:</strong> <code>GetBasebandAsync()</code> → <code>Decode&lt;NationBaseband&gt;()</code>. <code class="wrap">SetBasebandAsync(new NationBaseband(Speed, QValue, Session, InventoryFlag))</code>.</p><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col">Argument</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="Argument"><code>speed</code></td><td data-label="Type">integer</td><td data-label="Description"><strong>Required.</strong> Link profile 0 to 6. See the table below.</td></tr><tr><td data-label="Argument"><code>q_value</code></td><td data-label="Type">integer</td><td data-label="Description"><strong>Required.</strong> Gen2 Q, 0 to 15.</td></tr><tr><td data-label="Argument"><code>session</code></td><td data-label="Type">integer</td><td data-label="Description"><strong>Required.</strong> Gen2 session, 0 to 3.</td></tr><tr><td data-label="Argument"><code>inventory_flag</code></td><td data-label="Type">integer</td><td data-label="Description"><strong>Required.</strong> Target: 0 = A, 1 = B, 2 = alternate A and B.</td></tr><tr><td data-label="Argument"><code>persist</code></td><td data-label="Type">boolean</td><td data-label="Description">Optional. Save in the module. When omitted the module default applies. The SDK function omits it.</td></tr></tbody></table></div><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col"><code>data</code> field</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="data field"><code>speed</code>, <code>q_value</code>, <code>session</code>, <code>inventory_flag</code></td><td data-label="Type">integer</td><td data-label="Description">Values in effect after the read-back.</td></tr></tbody></table></div><div class="tablewrap" tabindex="0"><table><thead><tr><th scope="col">speed</th><th scope="col">RFID module profile</th></tr></thead><tbody><tr><td data-label="speed">0</td><td data-label="RFID module profile">Tari=25µs, FM0, LHF=40kHz</td></tr><tr><td data-label="speed">1</td><td data-label="RFID module profile">Dense mode: Tari=25µs, Miller4, LHF=250kHz</td></tr><tr><td data-label="speed">2</td><td data-label="RFID module profile">Tari=25µs, Miller4, LHF=300kHz</td></tr><tr><td data-label="speed">3</td><td data-label="RFID module profile">Fast mode: Tari=6.25µs, FM0, LHF=400kHz</td></tr><tr><td data-label="speed">4</td><td data-label="RFID module profile">Tari=20µs, Miller2, LHF=320kHz</td></tr><tr><td data-label="speed">5</td><td data-label="RFID module profile">Tari=6.25µs, FM0, LHF=640kHz</td></tr><tr><td data-label="speed">6</td><td data-label="RFID module profile">Tari=20µs, Miller4, LHF=320kHz</td></tr></tbody></table></div><p>Profile descriptions are those published by the RFID module vendor. Profiles 4 to 6 depend on the module firmware; a module that does not support a profile answers <code>failure</code> with <code>native_rejection</code>.</p><p>Baseband is configured while idle and remains active for subsequent inventory. When you compare read performance, note down speed, Q, session and target for every test.</p></div><div><div class="sample"><div class="samplebar"><span>JSON · args of set_baseband</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;speed&quot;: 3,
+  &quot;q_value&quot;: 4,
+  &quot;session&quot;: 1,
+  &quot;inventory_flag&quot;: 2
+}</code></pre></div><div class="sample"><div class="samplebar"><span>JSON · result</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;op_id&quot;: &quot;f3970fa1-080a-4074-8a3d-9ce65d576e05&quot;,
+  &quot;state&quot;: &quot;finished&quot;,
+  &quot;outcome&quot;: &quot;success&quot;,
+  &quot;confirmation&quot;: &quot;read_back_verified&quot;,
+  &quot;reason&quot;: &quot;&quot;,
+  &quot;data&quot;: {
+    &quot;speed&quot;: 3,
+    &quot;q_value&quot;: 4,
+    &quot;session&quot;: 1,
+    &quot;inventory_flag&quot;: 2
+  },
+  &quot;steps&quot;: [
+    {
+      &quot;command&quot;: 523,
+      &quot;status&quot;: 0,
+      &quot;raw_data_hex&quot;: &quot;00&quot;
+    },
+    {
+      &quot;command&quot;: 524,
+      &quot;status&quot;: 0,
+      &quot;raw_data_hex&quot;: &quot;03040102&quot;
+    }
+  ]
+}</code></pre></div></div></div>
+</section>
+<section id="op-band"><h2>get_rf_band · set_rf_band</h2>
+<div class="api-columns"><div><p>Read or select the regional frequency band. The band defines the channel grid used by <code>set_working_frequency</code>.</p><p><strong>.NET SDK:</strong> <code>GetRfBandAsync()</code> → <code>Decode&lt;NationRfBand&gt;()</code>. <code class="wrap">SetRfBandAsync(int bandCode)</code>.</p><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col">Argument</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="Argument"><code>band_code</code></td><td data-label="Type">integer</td><td data-label="Description"><strong>Required.</strong> 0 to 8. See the table below.</td></tr></tbody></table></div><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col"><code>data</code> field</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="data field"><code>band_code</code></td><td data-label="Type">integer</td><td data-label="Description">Band in effect.</td></tr></tbody></table></div><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col">band_code</th><th scope="col">Band</th><th scope="col">First channel / step / count (kHz)</th></tr></thead><tbody><tr><td data-label="band_code">0</td><td data-label="Band">China (GB) 920–925 MHz</td><td data-label="First channel / step / count (kHz)">920625 / 250 / 16</td></tr><tr><td data-label="band_code">1</td><td data-label="Band">China (GB) 840–845 MHz</td><td data-label="First channel / step / count (kHz)">840625 / 250 / 16</td></tr><tr><td data-label="band_code">2</td><td data-label="Band">China (GB) 840–845 + 920–925 MHz</td><td data-label="First channel / step / count (kHz)">840625 + 920625 / 250 / 16 + 16</td></tr><tr><td data-label="band_code">3</td><td data-label="Band">FCC 902–928 MHz</td><td data-label="First channel / step / count (kHz)">902750 / 500 / 50</td></tr><tr><td data-label="band_code">4</td><td data-label="Band">ETSI 866–868 MHz</td><td data-label="First channel / step / count (kHz)">865700 / 600 / 5</td></tr><tr><td data-label="band_code">5</td><td data-label="Band">Japan 916.8–920.4 MHz</td><td data-label="First channel / step / count (kHz)">916800 / 1200 / 4</td></tr><tr><td data-label="band_code">6</td><td data-label="Band">Taiwan 922.25–927.75 MHz</td><td data-label="First channel / step / count (kHz)">922250 / 500 / 12</td></tr><tr><td data-label="band_code">7</td><td data-label="Band">Indonesia 923.125–925.125 MHz</td><td data-label="First channel / step / count (kHz)">923125 / 250 / 9</td></tr><tr><td data-label="band_code">8</td><td data-label="Band">Russia 866.6–867.4 MHz</td><td data-label="First channel / step / count (kHz)">866600 / 200 / 5</td></tr></tbody></table></div><p>The band names and channel plans are those of the RFID module. The band is saved in the RFID module and survives a power cycle. Check the plan against the regulation that applies where the reader is installed before you choose channels.</p><p>The module must support the selected band. A band it does not accept returns <code>failure</code> with <code>native_rejection</code>. Select the band permitted where the reader is installed. Changing the band changes the meaning of channel indices, so set the hopping channels again afterwards.</p></div><div><div class="sample"><div class="samplebar"><span>JSON · args of set_rf_band</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;band_code&quot;: 3
+}</code></pre></div><div class="sample"><div class="samplebar"><span>JSON · result</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;op_id&quot;: &quot;f3970fa1-080a-4074-8a3d-9ce65d576e07&quot;,
+  &quot;state&quot;: &quot;finished&quot;,
+  &quot;outcome&quot;: &quot;success&quot;,
+  &quot;confirmation&quot;: &quot;read_back_verified&quot;,
+  &quot;reason&quot;: &quot;&quot;,
+  &quot;data&quot;: {
+    &quot;band_code&quot;: 3
+  },
+  &quot;steps&quot;: [
+    {
+      &quot;command&quot;: 515,
+      &quot;status&quot;: 0,
+      &quot;raw_data_hex&quot;: &quot;00&quot;
+    },
+    {
+      &quot;command&quot;: 516,
+      &quot;status&quot;: 0,
+      &quot;raw_data_hex&quot;: &quot;03&quot;
+    }
+  ]
+}</code></pre></div></div></div>
+</section>
+<section id="op-frequency"><h2>get_working_frequency · set_working_frequency</h2>
+<div class="api-columns"><div><p>Read or set how the reader hops between the channels of the active band: automatically, or over a list you choose.</p><p><strong>.NET SDK:</strong> <code>GetWorkingFrequencyAsync()</code> → <code>Decode&lt;NationWorkingFrequency&gt;()</code>. <code class="wrap">SetWorkingFrequencyAsync(new NationWorkingFrequency(Mode, Channels), bool persist = false)</code>.</p><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col">Argument</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="Argument"><code>mode</code></td><td data-label="Type">string</td><td data-label="Description"><strong>Required.</strong> <code>auto</code> or <code>manual</code>.</td></tr><tr><td data-label="Argument"><code>channels</code></td><td data-label="Type">integer[]</td><td data-label="Description"><strong>Required for <code>manual</code>.</strong> Up to 50 different zero-based channel indices, 0 to 49, in hopping order. Optional for <code>auto</code>.</td></tr><tr><td data-label="Argument"><code>persist</code></td><td data-label="Type">boolean</td><td data-label="Description">Optional. <code>true</code> saves the values in the RFID module so they survive a power cycle. With <code>false</code> (default) they apply until the reader is powered off; apply them again after each power-up.</td></tr></tbody></table></div><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col"><code>data</code> field</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="data field"><code>mode</code></td><td data-label="Type">string</td><td data-label="Description"><code>auto</code> or <code>manual</code> as reported by the module.</td></tr><tr><td data-label="data field"><code>channels</code></td><td data-label="Type">integer[]</td><td data-label="Description">Channel indices in hopping order.</td></tr></tbody></table></div><p>Read the band first: an index means a different frequency in each band. On FCC, index 26 is 915.750 MHz. In <code>manual</code> mode the reader uses only the listed channels, in the listed order, and needs at least one. A channel index that does not exist in the active band is refused with <code>failure</code> and <code>native_rejection</code>. With the SDK pass an empty array, not null, when you send <code>auto</code> without channels.</p></div><div><div class="sample"><div class="samplebar"><span>JSON · args of set_working_frequency</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;mode&quot;: &quot;manual&quot;,
+  &quot;channels&quot;: [26, 36],
+  &quot;persist&quot;: false
+}</code></pre></div><div class="sample"><div class="samplebar"><span>JSON · result</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;op_id&quot;: &quot;f3970fa1-080a-4074-8a3d-9ce65d576e09&quot;,
+  &quot;state&quot;: &quot;finished&quot;,
+  &quot;outcome&quot;: &quot;success&quot;,
+  &quot;confirmation&quot;: &quot;read_back_verified&quot;,
+  &quot;reason&quot;: &quot;&quot;,
+  &quot;data&quot;: {
+    &quot;mode&quot;: &quot;manual&quot;,
+    &quot;channels&quot;: [26, 36]
+  },
+  &quot;steps&quot;: [
+    {
+      &quot;command&quot;: 517,
+      &quot;status&quot;: 0,
+      &quot;raw_data_hex&quot;: &quot;00&quot;
+    },
+    {
+      &quot;command&quot;: 518,
+      &quot;status&quot;: 0,
+      &quot;raw_data_hex&quot;: &quot;0000021A24&quot;
+    }
+  ]
+}</code></pre></div></div></div>
+</section>
+<section id="op-filter"><h2>get_filter_settings · set_filter_settings</h2>
+<div class="api-columns"><div><p>Read or set the filter the RFID module applies before it reports a tag: an interval for repeated reports of the same tag and an RSSI threshold.</p><p><strong>.NET SDK:</strong> <code>GetFilterSettingsAsync()</code> → <code>Decode&lt;NationFilterSettings&gt;()</code>. <code class="wrap">SetFilterSettingsAsync(int repeatTimeMs, int rssiThreshold)</code>.</p><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col">Argument</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="Argument"><code>repeat_time_ms</code></td><td data-label="Type">integer</td><td data-label="Description"><strong>Required.</strong> 0 to 655350, a multiple of 10.</td></tr><tr><td data-label="Argument"><code>rssi_threshold</code></td><td data-label="Type">integer</td><td data-label="Description"><strong>Required.</strong> 0 to 255, in the module&#x27;s raw RSSI unit.</td></tr></tbody></table></div><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col"><code>data</code> field</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="data field"><code>repeat_time_ms</code></td><td data-label="Type">integer</td><td data-label="Description">Repeat interval in effect.</td></tr><tr><td data-label="data field"><code>rssi_threshold</code></td><td data-label="Type">integer or null</td><td data-label="Description">Threshold in effect. <code>null</code> when the module returns the repeat interval alone.</td></tr></tbody></table></div><p>Within the repeat interval the RFID module reports the same tag only once. A tag whose RSSI is lower than the threshold is not reported. Both settings change the number of observations, so use the same filter when you compare read counts between tests.</p></div><div><div class="sample"><div class="samplebar"><span>JSON · args of set_filter_settings</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;repeat_time_ms&quot;: 100,
+  &quot;rssi_threshold&quot;: 0
+}</code></pre></div><div class="sample"><div class="samplebar"><span>JSON · result</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;op_id&quot;: &quot;f3970fa1-080a-4074-8a3d-9ce65d576e0b&quot;,
+  &quot;state&quot;: &quot;finished&quot;,
+  &quot;outcome&quot;: &quot;success&quot;,
+  &quot;confirmation&quot;: &quot;read_back_verified&quot;,
+  &quot;reason&quot;: &quot;&quot;,
+  &quot;data&quot;: {
+    &quot;repeat_time_ms&quot;: 100,
+    &quot;rssi_threshold&quot;: 0
+  },
+  &quot;steps&quot;: [
+    {
+      &quot;command&quot;: 521,
+      &quot;status&quot;: 0,
+      &quot;raw_data_hex&quot;: &quot;00&quot;
+    },
+    {
+      &quot;command&quot;: 522,
+      &quot;status&quot;: 0,
+      &quot;raw_data_hex&quot;: &quot;000A00&quot;
+    }
+  ]
+}</code></pre></div></div></div>
+</section>
+<section id="op-write-epc"><h2>write_epc</h2>
+<div class="api-columns"><div><p>Write a new EPC to one tag in the field of one antenna. The tag is selected by its TID or by its current EPC. The reader computes the PC word from the EPC length.</p><p><strong>.NET SDK:</strong> <code class="wrap">WriteEpcAsync(new NationEpcWrite(Antenna, EpcHex, TargetTidHex, TargetEpcHex, AccessPasswordHex), Guid? operationId)</code>. Keep <code>operationId</code> to query <code>GetModuleResultAsync</code> after a lost reply.</p><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col">Argument</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="Argument"><code>antenna</code></td><td data-label="Type">integer</td><td data-label="Description"><strong>Required.</strong> Port 1 to 4.</td></tr><tr><td data-label="Argument"><code>epc_hex</code></td><td data-label="Type">string</td><td data-label="Description"><strong>Required.</strong> New EPC, 1 to 124 hex digits. Padded on the right with zeros to whole 16-bit words.</td></tr><tr><td data-label="Argument"><code>target_tid_hex</code></td><td data-label="Type">string</td><td data-label="Description"><strong>One of the two selectors is required.</strong> TID prefix of the tag, 1 to 31 whole bytes, matched from bit 0.</td></tr><tr><td data-label="Argument"><code>target_epc_hex</code></td><td data-label="Type">string</td><td data-label="Description"><strong>One of the two selectors is required.</strong> Current EPC prefix, 1 to 15 whole words, matched from bit 32.</td></tr><tr><td data-label="Argument"><code>access_password_hex</code></td><td data-label="Type">string</td><td data-label="Description">Optional. Exactly eight hex digits.</td></tr></tbody></table></div><div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col"><code>data</code> field</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td data-label="data field"><code>result_code</code></td><td data-label="Type">integer</td><td data-label="Description">Native result of the module. 0 means the write was acknowledged.</td></tr><tr><td data-label="data field"><code>epc_hex</code></td><td data-label="Type">string</td><td data-label="Description">EPC as written, including padding.</td></tr><tr><td data-label="data field"><code>word_count</code></td><td data-label="Type">integer</td><td data-label="Description">Number of 16-bit EPC words.</td></tr><tr><td data-label="data field"><code>pc_hex</code></td><td data-label="Type">string</td><td data-label="Description">PC word the reader wrote.</td></tr><tr><td data-label="data field"><code>failed_word_address</code></td><td data-label="Type">integer</td><td data-label="Description">Only on failure, when the module reports the word where the write stopped.</td></tr></tbody></table></div><p>Select antenna 1…4 and exactly one of target_tid_hex or target_epc_hex. TID matching starts at bit 0 (1…31 bytes); EPC matching starts at bit 32 (1…15 whole words). Select a uniquely identifiable tag in that antenna&#x27;s field. access_password_hex is optional and contains exactly eight hex digits.</p><p>epc_hex accepts 1…124 hex digits. Firmware pads on the right to complete 16-bit words and computes PC. For 1234AB the stored EPC is 1234AB00, word_count=2 and pc_hex=1000. Success returns acknowledged with the computed fields. Inventory EPC + TID again and verify the new EPC on the same TID.</p><p>If the reply to a write is lost, call <code>module.result</code> with the original <code>op_id</code> instead of writing again. The reader keeps the results of up to 32 setter and write operations for at least 60 seconds (<code>hello.module_history_size</code>, <code>hello.module_retention_ms</code>). They are lost when the reader reboots, and an older result can be replaced by a newer one after the 60 seconds. If the result is gone, scan the tag by TID to see which EPC it holds.</p><p>Send only the selector you use. A selector sent as <code>null</code> is rejected. The SDK omits unused selectors. The power cached for the chosen antenna must not exceed <code>hello.power_limit_dbm</code>, otherwise the reader answers <code class="wrap">-32003 power_limited</code>.</p></div><div><div class="sample"><div class="samplebar"><span>JSON · args of write_epc</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;antenna&quot;: 1,
+  &quot;epc_hex&quot;: &quot;1234AB&quot;,
+  &quot;target_tid_hex&quot;: &quot;E2801160600002054A3C91F7&quot;
+}</code></pre></div><div class="sample"><div class="samplebar"><span>JSON · result</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;op_id&quot;: &quot;c0a8b2d4-5e6f-4a1b-9c3d-7e8f9a0b1c2d&quot;,
+  &quot;state&quot;: &quot;finished&quot;,
+  &quot;outcome&quot;: &quot;success&quot;,
+  &quot;confirmation&quot;: &quot;acknowledged&quot;,
+  &quot;reason&quot;: &quot;&quot;,
+  &quot;data&quot;: {
+    &quot;result_code&quot;: 0,
+    &quot;word_count&quot;: 2,
+    &quot;pc_hex&quot;: &quot;1000&quot;,
+    &quot;epc_hex&quot;: &quot;1234AB00&quot;
+  },
+  &quot;steps&quot;: [
+    {
+      &quot;command&quot;: 529,
+      &quot;status&quot;: 0,
+      &quot;raw_data_hex&quot;: &quot;00&quot;
+    }
+  ]
+}</code></pre></div><div class="sample"><div class="samplebar"><span>JSON · result of a failed write</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+  &quot;op_id&quot;: &quot;c0a8b2d4-5e6f-4a1b-9c3d-7e8f9a0b1c2e&quot;,
+  &quot;state&quot;: &quot;finished&quot;,
+  &quot;outcome&quot;: &quot;failure&quot;,
+  &quot;confirmation&quot;: &quot;acknowledged&quot;,
+  &quot;reason&quot;: &quot;tag_write_failed&quot;,
+  &quot;data&quot;: {
+    &quot;result_code&quot;: 10
+  },
+  &quot;steps&quot;: [
+    {
+      &quot;command&quot;: 529,
+      &quot;status&quot;: 10,
+      &quot;raw_data_hex&quot;: &quot;0A&quot;
+    }
+  ]
+}</code></pre></div></div></div>
+</section>
+<nav class="pager" aria-label="Documentation navigation"><a href="device.html"><small>Previous</small>← Reader Control API</a><a class="next" href="diagnostics.html"><small>Next</small>Diagnostics and recovery →</a></nav></main>
+<nav class="toc" aria-label="On this page"><h2>On this page</h2><span class="toc-group">Basics</span><a href="#envelope">Module transaction envelope</a><a href="#operations">Operation reference</a><a href="#rf-setup">Apply and verify RF settings</a><span class="toc-group">Operations</span><a href="#op-identity">get_reader_info · get_serial_number</a><a href="#op-power">get_power · set_power</a><a href="#op-baseband">get_baseband · set_baseband</a><a href="#op-band">get_rf_band · set_rf_band</a><a href="#op-frequency">get_working_frequency · set_working_frequency</a><a href="#op-filter">get_filter_settings · set_filter_settings</a><a href="#op-write-epc">write_epc</a></nav>
+</div></body></html>

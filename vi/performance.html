@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiểm thử và hiệu năng · NDN5030</title>
+<meta name="description" content="Các kiểm tra chức năng có thể tái hiện và điều kiện đo độ trễ của firmware cùng bản TCPHost hiện tại.">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="../assets/index-vi.js"></script>
+<script defer src="../assets/site.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Đến nội dung</a>
+<div class="layout"><aside id="sidebar" class="sidebar">
+<div class="sidehead">
+<a class="brand" href="index.html"><img src="../assets/nextwaves.png" alt="Nextwaves"><span><strong>NDN5030</strong><small>Tài liệu kỹ thuật</small></span></a>
+<button class="menu" aria-controls="sidebar" aria-expanded="false">Danh mục</button>
+<label class="search"><span class="glass" aria-hidden="true"></span><input id="search" type="search" aria-label="Tìm trong tài liệu" placeholder="Tìm trong tài liệu…"><kbd aria-hidden="true">/</kbd></label>
+</div>
+<div class="sidebody">
+<div class="results" aria-label="Kết quả tìm kiếm" aria-live="polite" hidden></div>
+<nav aria-label="Danh mục tài liệu"><div class="navgroup"><h2>Tổng quan hệ thống</h2><a href="index.html">Tích hợp NDN5030</a><a href="concepts.html">Khái niệm và thuật ngữ</a></div><div class="navgroup"><h2>Thiết lập và demo</h2><a href="commissioning.html">Kết nối reader</a><a href="demo.html">Tra cứu chức năng TCPHost</a></div><div class="navgroup"><h2>Tích hợp ứng dụng</h2><a href="sdk.html">.NET SDK trực tiếp</a><a href="gateway.html">Triển khai Gateway</a></div><div class="navgroup"><h2>Tra cứu API</h2><a href="rest.html">REST API Gateway</a><a href="device.html">Control API của reader</a><a href="radio.html">Cấu hình RF</a></div><div class="navgroup"><h2>Kiểm thử và khôi phục</h2><a href="diagnostics.html">Chẩn đoán và khôi phục</a><a class="active" aria-current="page" href="performance.html">Kiểm thử và hiệu năng</a></div></nav>
+</div></aside>
+<main id="main"><div class="mainbar"><div class="crumb"><a href="index.html">Tài liệu</a><span>/</span>Kiểm thử và khôi phục</div>
+<nav class="language" aria-label="Ngôn ngữ"><a href="../performance.html" lang="en" hreflang="en" aria-label="English" data-language-link>EN</a><a href="performance.html" lang="vi" hreflang="vi" aria-label="Tiếng Việt" data-language-link aria-current="true">VI</a></nav></div>
+<header class="pagehead"><h1>Kiểm thử và hiệu năng</h1><p class="lead">Các kiểm tra chức năng có thể tái hiện và điều kiện đo độ trễ của firmware cùng bản TCPHost hiện tại.</p></header>
+<details class="inline-toc"><summary>Trong trang này</summary><nav aria-label="Trong trang này"><a href="#setup">Cấu hình kiểm thử</a><a href="#procedure">Trình tự kiểm thử chức năng</a><a href="#timing">Mốc đo độ trễ</a><a href="#baseline">Số đo tham chiếu trên reader thật</a><a href="#load">Khả năng xử lý của phần mềm host</a></nav></details>
+<section id="setup"><h2>Cấu hình kiểm thử</h2>
+<p>Trước mỗi so sánh, ghi firmware, board ID, boot ID, SDK version, cổng bật, readback công suất, baseband, band, F-hop và upload filter. Giữ bộ tag, vị trí và đấu anten cố định. Kiểm tra từng reader rồi chạy đồng thời.</p>
+<div class="tablewrap" tabindex="0"><table><thead><tr><th scope="col">Thông số</th><th scope="col">Giá trị dùng khi đo</th></tr></thead><tbody><tr><td data-label="Thông số">Firmware / host</td><td data-label="Giá trị dùng khi đo">0.5.0-comport / Ndn5030.Client 0.8.2</td></tr><tr><td data-label="Thông số">Power</td><td data-label="Giá trị dùng khi đo">ANT1–ANT4 = 15 dBm</td></tr><tr><td data-label="Thông số">Baseband</td><td data-label="Giá trị dùng khi đo">speed=3 · q_value=4 · session=0 · inventory_flag=0</td></tr><tr><td data-label="Thông số">Band / F-hop</td><td data-label="Giá trị dùng khi đo">FCC · auto · [26,32,36,40,29,33,37,41,28,34]</td></tr><tr><td data-label="Thông số">Upload filter</td><td data-label="Giá trị dùng khi đo">repeat_time_ms=0 · rssi_threshold=0</td></tr><tr><td data-label="Thông số">Network</td><td data-label="Giá trị dùng khi đo">Hai reader thật và host trên cùng switch PoE có dây</td></tr></tbody></table></div>
+<p>Các số đo được thực hiện qua Ethernet với image firmware 0.5.0-comport. Image này chỉ khác image chuẩn ở chức năng của cổng USB-C.</p>
+</section>
+<section id="procedure"><h2>Trình tự kiểm thử chức năng</h2>
+<ol><li>Trên TCPHost, chạy EPC, EPC + TID và TID only trên ANT1, mỗi phiên 5 giây. Kiểm tra EPC/TID đúng với tag đã biết và phiên báo data complete. Lặp cho ANT2–ANT4.</li><li>Chạy bốn anten rồi hai reader đồng thời. Kiểm tra bộ đếm, board ID, session riêng và từng anten bật có báo cáo với bộ tag đã biết.</li><li>Nhấn <strong>Stop</strong> trước khi hết giới hạn thời gian. Chờ reader về idle và nhận đủ báo cáo tới số thứ tự cuối. Sau đó chạy lại để xác nhận phiên kế tiếp bắt đầu bình thường.</li><li>Đóng kết nối trực tiếp rồi chạy ví dụ Gateway. So sánh số observation, EPC khác nhau, chất lượng cuối và dữ liệu phát lại với cùng cấu hình RF.</li></ol>
+<div class="sample"><div class="samplebar"><span>PowerShell · packaged CLI</span><button type="button" class="copy" hidden>Sao chép</button></div><pre><code>.\Ndn5030.Cli.exe scan wss://192.168.77.2:8443/v1/control D:\station\host.json 5000 1,2,3,4 epc_tid</code></pre></div>
+<p>CLI mở kết nối mới mỗi lần gọi. Dùng CLI kiểm tra kết nối, đủ dữ liệu và báo cáo. Khi đo độ trễ kết nối sẵn, giữ ReaderClient kết nối qua các phiên.</p>
+</section>
+<section id="timing"><h2>Mốc đo độ trễ</h2>
+<ol><li>Kết nối một lần, xác nhận idle, lấy lease và đọc lại RF. Mở consumer sự kiện trước khi gửi inventory.start.</li><li>Ghi t0 theo đồng hồ UTC của host ngay trước StartInventoryAsync. Lấy t1 từ ReaderEvent.ReceivedAt của sự kiện inventory.tags đầu tiên của phiên đó; ReceivedAt cũng là UTC. Độ trễ tag đầu = t1 − t0.</li><li>Với mỗi báo cáo, ghi rx_mono_us (đồng hồ riêng của reader, độ phân giải 1 ms) và ReceivedAt. So khoảng cách giữa các báo cáo trong cùng một phiên. Đồng thời đo mỗi phiên bằng Stopwatch và so với hiệu UTC, để chắc đồng hồ máy tính không bị chỉnh trong lúc thử.</li><li>Chạy bốn phiên 5 giây cho mỗi mode trên mỗi reader, luân phiên EPC và EPC + TID, hai reader chạy trong mỗi cặp. Báo số mẫu, min, median, max và tính đầy đủ.</li></ol>
+<div class="sample"><div class="samplebar"><span>Timing definition</span><button type="button" class="copy" hidden>Sao chép</button></div><pre><code>first_tag_ms = host_first_ReceivedAt - host_before_StartInventoryAsync
+delta_i = (host_i - host_0) - (rx_mono_us_i - rx_mono_us_0) / 1000
+delivery_variation_i = delta_i - min(delta_in_same_run)</code></pre></div>
+<p>Hai đồng hồ có gốc khác nhau. delivery_variation đo trễ tăng thêm so với báo cáo nhanh nhất trong phiên. Muốn đo thời gian truyền tuyệt đối của một báo cáo thì phải đồng bộ đồng hồ reader với đồng hồ máy tính, điều mà phương pháp này không làm. Start-to-first-tag gồm hành vi RF/module. Để đo thời điểm tag đi vào vùng đọc, cần thêm một mốc thời gian đo từ bên ngoài. Thời gian hiển thị còn gồm nhịp 100 ms và thời gian ứng dụng vẽ lại giao diện.</p>
+</section>
+<section id="baseline"><h2>Số đo tham chiếu trên reader thật</h2>
+<p>Đo ngày 2026-11-23 trên hai reader có dây. Tag đã nằm trên anten. Mỗi dòng gồm bốn phiên, hai reader chạy đồng thời. 16 phiên nhận đủ 2354/2354 lượt, reported_drops=0 và lỗi đầu vào bằng 0.</p>
+<div class="tablewrap stack" tabindex="0"><table><thead><tr><th scope="col">Reader</th><th scope="col">Mode</th><th scope="col">Observation</th><th scope="col">Tag đầu min / median / max (ms)</th><th scope="col">Dao động truyền P95 (ms)</th></tr></thead><tbody><tr><td data-label="Reader">Reader A (192.168.77.2)</td><td data-label="Mode">epc</td><td data-label="Observation">910</td><td data-label="Tag đầu min / median / max (ms)">67.36 / 75.25 / 123.86</td><td data-label="Dao động truyền P95 (ms)">52.11</td></tr><tr><td data-label="Reader">Reader A (192.168.77.2)</td><td data-label="Mode">epc_tid</td><td data-label="Observation">808</td><td data-label="Tag đầu min / median / max (ms)">66.58 / 67.19 / 114.59</td><td data-label="Dao động truyền P95 (ms)">48.90</td></tr><tr><td data-label="Reader">Reader B (192.168.77.3)</td><td data-label="Mode">epc</td><td data-label="Observation">313</td><td data-label="Tag đầu min / median / max (ms)">113.89 / 137.42 / 161.65</td><td data-label="Dao động truyền P95 (ms)">52.54</td></tr><tr><td data-label="Reader">Reader B (192.168.77.3)</td><td data-label="Mode">epc_tid</td><td data-label="Observation">323</td><td data-label="Tag đầu min / median / max (ms)">112.33 / 112.93 / 175.33</td><td data-label="Dao động truyền P95 (ms)">51.92</td></tr></tbody></table></div>
+<p>Độ trễ tag đầu là thời gian tới báo cáo đầu tiên từ bất kỳ anten nào. Khi bật cả bốn anten, reader lần lượt đọc từng cổng, nên tag ở cổng khác có thể xuất hiện muộn hơn nhiều: trên Reader B ở chế độ EPC + TID, báo cáo ANT4 đầu tiên đến sau báo cáo đầu tiên của phiên từ 1185 đến 1248 ms. Độ trễ này phát sinh bên trong reader, trước khi báo cáo được gửi qua Ethernet. Nếu ứng dụng phụ thuộc vào tốc độ phát hiện tag trên một anten cụ thể, hãy đo riêng trường hợp đó. Hai reader dùng hai bộ tag khác nhau, nên không so sánh số observation giữa hai reader.</p>
+</section>
+<section id="load"><h2>Khả năng xử lý của phần mềm host</h2>
+<p>Trong một phép thử chỉ chạy phần mềm trên máy host, không dùng phần cứng reader, .NET SDK và TCPHost nhận đủ 4080/4080 observation từ bốn kết nối đồng thời, tổng cộng khoảng 510 observation mỗi giây. Bảng của TCPHost giữ ở giới hạn 500 dòng trong khi bộ đếm đạt 700 EPC khác nhau cho mỗi kết nối.</p>
+<p>Phép thử này chỉ đánh giá phần mềm trên máy tính, không đo hiệu năng RF hay thông lượng Ethernet của reader. Các số đo phần cứng ở trên thực hiện với hai reader. Trước khi chốt mục tiêu tải, hãy thử với đúng số reader, số lượng tag và thời lượng phiên của bạn.</p>
+</section>
+<nav class="pager" aria-label="Danh mục tài liệu"><a href="diagnostics.html"><small>Trang trước</small>← Chẩn đoán và khôi phục</a></nav></main>
+<nav class="toc" aria-label="Trong trang này"><h2>Trong trang này</h2><a href="#setup">Cấu hình kiểm thử</a><a href="#procedure">Trình tự kiểm thử chức năng</a><a href="#timing">Mốc đo độ trễ</a><a href="#baseline">Số đo tham chiếu trên reader thật</a><a href="#load">Khả năng xử lý của phần mềm host</a></nav>
+</div></body></html>

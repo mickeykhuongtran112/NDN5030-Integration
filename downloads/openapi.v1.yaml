@@ -1,0 +1,281 @@
+openapi: 3.1.1
+info:
+  title: NDN5030 Store Gateway
+  version: 1.0.0
+  description: >
+    Store-local HTTPS API for a POS backend. The gateway owns the reader
+    connection and persists scan events. A sales application owns its cart
+    and transaction decisions. By default the journal is replayable for 24 hours
+    after finalization and scan summaries and idempotency keys are retained for 30 days.
+servers:
+  - url: /api/v1
+security:
+  - gatewayBearer: []
+paths:
+  /readers:
+    get:
+      operationId: listReaders
+      summary: List readers visible to the authenticated store
+      responses:
+        '200':
+          description: Known readers, including disconnected units
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Reader' }
+        default: { $ref: '#/components/responses/Failure' }
+  /readers/{board_id}/scans:
+    parameters:
+      - name: board_id
+        in: path
+        required: true
+        schema: { type: string, minLength: 1 }
+    post:
+      operationId: startScan
+      summary: Open a bounded EPC inventory session
+      description: >
+        Persist the intent and its key before sending Start. Retries by the same
+        integration for the same reader, key and payload return the same scan
+        during its retention window. A conflicting payload or another owner
+        returns 409. Scope reads and writes to the authorized store and reader.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StartScan' }
+            example:
+              checkout_ref: cart-42
+              antenna_sequence: [1, 3]
+              max_duration_ms: 5000
+      responses:
+        '202': { $ref: '#/components/responses/Accepted' }
+        '200': { $ref: '#/components/responses/CurrentScan' }
+        '409': { $ref: '#/components/responses/Failure' }
+        '422': { $ref: '#/components/responses/Failure' }
+        '503': { $ref: '#/components/responses/Failure' }
+        default: { $ref: '#/components/responses/Failure' }
+  /scans/{scan_id}:
+    parameters:
+      - $ref: '#/components/parameters/ScanId'
+    get:
+      operationId: getScan
+      summary: Read gateway state, device outcome and stream quality
+      responses:
+        '200': { $ref: '#/components/responses/CurrentScan' }
+        default: { $ref: '#/components/responses/Failure' }
+  /scans/{scan_id}/stop:
+    parameters:
+      - $ref: '#/components/parameters/ScanId'
+    post:
+      operationId: stopScan
+      summary: Request Stop and return the state of the same scan
+      description: >
+        Stop is idempotent for this scan, including during Start. A repeated
+        call returns its current outcome. Confirmed RF stop is determined from
+        the terminal device result.
+      responses:
+        '202': { $ref: '#/components/responses/Accepted' }
+        '200': { $ref: '#/components/responses/CurrentScan' }
+        default: { $ref: '#/components/responses/Failure' }
+  /scans/{scan_id}/observations:
+    parameters:
+      - $ref: '#/components/parameters/ScanId'
+    get:
+      operationId: listObservations
+      summary: Page through observations already committed by the gateway
+      parameters:
+        - $ref: '#/components/parameters/After'
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
+      responses:
+        '200':
+          description: Ascending gateway journal order at the time of this request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ObservationPage' }
+        '410': { $ref: '#/components/responses/Expired' }
+        default: { $ref: '#/components/responses/Failure' }
+  /scans/{scan_id}/events:
+    parameters:
+      - $ref: '#/components/parameters/ScanId'
+    get:
+      operationId: streamScan
+      summary: Replay committed events and then stream live updates using SSE
+      description: >
+        Without a cursor, start at the beginning of the scan. Each SSE id is
+        an opaque journal cursor scoped to the scan. Resume strictly after the
+        supplied cursor. Last-Event-ID takes precedence over after. The event
+        name selects the JSON schema of data. Heartbeats are SSE comments.
+        Close the client stream after a terminal scan event with finalized
+        stream quality. A Stop response may precede the last observations.
+      parameters:
+        - $ref: '#/components/parameters/After'
+        - name: Last-Event-ID
+          in: header
+          schema: { type: string, minLength: 1 }
+      responses:
+        '200':
+          description: Ordered observation, scan and gap events
+          content:
+            text/event-stream:
+              schema: { type: string }
+              x-event-schemas:
+                observation: { $ref: '#/components/schemas/Observation' }
+                scan: { $ref: '#/components/schemas/Scan' }
+                gap: { $ref: '#/components/schemas/Gap' }
+        '204':
+          description: Client already has the terminal cursor. End reconnection.
+        '410': { $ref: '#/components/responses/Expired' }
+        default: { $ref: '#/components/responses/Failure' }
+components:
+  securitySchemes:
+    gatewayBearer:
+      type: http
+      scheme: bearer
+      description: Store and reader scoped backend credential sent over HTTPS.
+  parameters:
+    ScanId:
+      name: scan_id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Reuse the same UUID for all retries of one user intent.
+      schema: { type: string, format: uuid }
+    After:
+      name: after
+      in: query
+      description: Exclusive gateway journal cursor from this scan.
+      schema: { type: string, minLength: 1 }
+  responses:
+    Accepted:
+      description: Intent accepted. Inspect the current scan for hardware outcome.
+      headers:
+        Location:
+          description: URL of the scan resource
+          schema: { type: string, format: uri-reference }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Scan' }
+    CurrentScan:
+      description: Current or terminal state of this scan
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Scan' }
+    Expired:
+      description: Journal history for this cursor has expired. Reconcile using the scan summary.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    Failure:
+      description: Machine-readable error with a stable code
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+  schemas:
+    Reader:
+      type: object
+      required: [board_id, online, antenna_ports]
+      properties:
+        board_id: { type: string }
+        online: { type: boolean }
+        antenna_ports: { type: integer, minimum: 1, examples: [4] }
+        firmware: { type: string }
+        supports_epc_tid: { type: boolean, description: Whether the reader advertises combined EPC and TID inventory. }
+        supports_tid_only: { type: boolean, description: Whether the reader can report TID without EPC. }
+    AntennaId:
+      type: integer
+      minimum: 1
+      maximum: 4
+    StartScan:
+      type: object
+      required: [antenna_sequence, max_duration_ms]
+      properties:
+        data: { type: string, enum: [epc, epc_tid, tid], default: epc, description: Combined and TID-only reports require the corresponding reader capability. }
+        checkout_ref:
+          type: string
+          maxLength: 128
+          description: Opaque POS correlation value scoped to the store.
+        antenna_sequence:
+          type: array
+          minItems: 1
+          maxItems: 4
+          uniqueItems: true
+          items: { $ref: '#/components/schemas/AntennaId' }
+        max_duration_ms:
+          type: integer
+          minimum: 1
+          maximum: 3600000
+          description: Board deadline for initiating Stop, armed before the first inventory TX. Terminal state reports its outcome. Values outside the device profile return 422.
+    Scan:
+      type: object
+      required: [scan_id, board_id, state, stream_quality, observations_persisted]
+      properties:
+        scan_id: { type: string, format: uuid, description: Gateway-generated scan identifier. }
+        board_id: { type: string }
+        checkout_ref: { type: string }
+        boot_id: { type: string }
+        board_session_id: { type: string }
+        state:
+          type: string
+          enum: [starting, running, stopping, finished, failed, unknown]
+          description: Device operation state as observed by the gateway. Stream finalization may follow RF stop.
+        outcome: { type: string, enum: [success, failure, partial, unknown] }
+        stream_quality:
+          type: string
+          enum: [pending, complete, partial, unknown]
+          description: Set after draining through the board terminal watermark or closing with loss or uncertainty. A complete protocol stream describes received reports, irrespective of the physical tag population.
+        observations_persisted: { type: integer, minimum: 0 }
+        last_board_seq: { type: integer, minimum: 0 }
+        reported_drops: { type: integer, minimum: 0 }
+        reason: { type: string }
+    Observation:
+      type: object
+      required: [scan_id, board_id, boot_id, board_session_id, seq, antenna, rx_mono_us, host_received_at]
+      anyOf:
+        - required: [epc_hex]
+        - required: [tid_hex]
+      properties:
+        scan_id: { type: string, format: uuid }
+        board_id: { type: string }
+        boot_id: { type: string }
+        board_session_id: { type: string, description: Maps to session_id on the device wire. }
+        seq: { type: integer, minimum: 1 }
+        antenna: { $ref: '#/components/schemas/AntennaId' }
+        epc_hex: { type: string, pattern: '^(?:[0-9A-Fa-f]{2})+$' }
+        tid_hex: { type: string, pattern: '^(?:[0-9A-Fa-f]{2})+$' }
+        rssi_raw: { type: integer, minimum: 0, maximum: 255 }
+        rx_mono_us: { type: integer, minimum: 0 }
+        host_received_at: { type: string, format: date-time, description: UTC at gateway receipt. }
+    ObservationPage:
+      type: object
+      required: [items, next_cursor, has_more]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Observation' }
+        next_cursor:
+          type: [string, 'null']
+          description: Position through which the journal was read. Null for an empty history.
+        has_more: { type: boolean }
+    Gap:
+      type: object
+      required: [scan_id, reason]
+      properties:
+        scan_id: { type: string, format: uuid }
+        reason: { type: string, examples: [sequence_gap, uart_overrun, storage_full] }
+        after_board_seq: { type: integer, minimum: 0 }
+        known_lost: { type: integer, minimum: 0 }
+    ApiError:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, examples: [reader_busy, idempotency_conflict, reader_offline, cursor_expired] }
+        message: { type: string }
