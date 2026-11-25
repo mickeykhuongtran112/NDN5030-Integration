@@ -19,7 +19,7 @@ async function call(path, options = {}) {
 const accepted = await call(`/readers/${encodeURIComponent(board)}/scans`, {
   method: "POST",
   headers: { "Content-Type": "application/json", "Idempotency-Key": intentKey },
-  body: JSON.stringify({ checkout_ref: checkout, antenna_sequence: [1, 3], max_duration_ms: 2000 }),
+  body: JSON.stringify({ checkout_ref: checkout, antenna_sequence: [1, 2, 3, 4], max_duration_ms: 2000 }),
 });
 const path = `/scans/${accepted.scan_id}`;
 let cursor, scan, reads = 0;

@@ -107,7 +107,7 @@ def read(args):
         lease = rpc("lease.acquire")["lease_id"]
         # This bounded run fits inside the five-second lease.
         session = rpc("inventory.start", lease_id=lease, op_id=operation, mode="scenario",
-                      antenna_sequence=[1], data="epc_tid", max_duration_ms=1200)
+                      antenna_sequence=[1, 2, 3, 4], data="epc_tid", max_duration_ms=1200)
         active_session = session["session_id"]
         for data in early_tags:
             on_tag(data)

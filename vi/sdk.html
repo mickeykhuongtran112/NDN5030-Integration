@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Điều khiển reader trực tiếp · SDK / Control API · NDN5030</title>
-<meta name="description" content="Ứng dụng của bạn mở kết nối tới từng đầu đọc qua Ethernet WSS hoặc USB COM. Dùng cách này để cấu hình RF, quét thẻ và ghi EPC.">
+<meta name="description" content="Ứng dụng của bạn mở kết nối tới từng đầu đọc qua Ethernet WSS hoặc cổng nối tiếp USB. Dùng cách này để cấu hình RF, quét thẻ và ghi EPC.">
 <link rel="stylesheet" href="../assets/site.css">
 <script defer src="../assets/index-vi.js"></script>
 <script defer src="../assets/site.js"></script>
@@ -18,15 +18,15 @@
 </div>
 <div class="sidebody">
 <div class="results" aria-label="Kết quả tìm kiếm" aria-live="polite" hidden></div>
-<nav aria-label="Danh mục tài liệu"><div class="navgroup"><h2>Tổng quan hệ thống</h2><a href="index.html">Tích hợp NDN5030</a><a href="concepts.html">Khái niệm và thuật ngữ</a></div><div class="navgroup"><h2>Thiết lập và demo</h2><a href="commissioning.html">Kết nối đầu đọc</a><a href="demo.html">Tra cứu chức năng TCPHost</a></div><div class="navgroup"><h2>Tích hợp ứng dụng</h2><a class="active" aria-current="page" href="sdk.html">Điều khiển reader trực tiếp · SDK / Control API</a><a href="gateway.html">Tích hợp POS/backend · Gateway REST API</a></div><div class="navgroup"><h2>Tra cứu API</h2><a href="rest.html">REST API của Gateway</a><a href="device.html">Control API của đầu đọc</a><a href="radio.html">Cấu hình RF</a></div><div class="navgroup"><h2>Kiểm thử và khôi phục</h2><a href="diagnostics.html">Chẩn đoán và khôi phục</a><a href="performance.html">Kiểm thử và hiệu năng</a></div></nav>
+<nav aria-label="Danh mục tài liệu"><div class="navgroup"><h2>Tổng quan hệ thống</h2><a href="index.html">Tích hợp NDN5030</a><a href="concepts.html">Khái niệm và thuật ngữ</a></div><div class="navgroup"><h2>Thiết lập và demo</h2><a href="commissioning.html">Kết nối đầu đọc</a><a href="demo.html">Tra cứu chức năng Reader Management Console</a></div><div class="navgroup"><h2>Tích hợp ứng dụng</h2><a class="active" aria-current="page" href="sdk.html">Điều khiển reader trực tiếp · SDK / Control API</a><a href="gateway.html">Tích hợp POS/backend · Gateway REST API</a></div><div class="navgroup"><h2>Tra cứu API</h2><a href="rest.html">REST API của Gateway</a><a href="device.html">Control API của đầu đọc</a><a href="radio.html">Cấu hình RF</a></div><div class="navgroup"><h2>Kiểm thử và khôi phục</h2><a href="diagnostics.html">Chẩn đoán và khôi phục</a><a href="performance.html">Kiểm thử và hiệu năng</a></div></nav>
 </div></aside>
 <main id="main"><div class="mainbar"><div class="crumb"><a href="index.html">Tài liệu</a><span>/</span>Tích hợp ứng dụng</div>
 <nav class="language" aria-label="Ngôn ngữ"><a href="../sdk.html" lang="en" hreflang="en" aria-label="English" data-language-link>EN</a><a href="sdk.html" lang="vi" hreflang="vi" aria-label="Tiếng Việt" data-language-link aria-current="true">VI</a></nav></div>
-<header class="pagehead"><h1>Điều khiển reader trực tiếp · SDK / Control API</h1><p class="lead">Ứng dụng của bạn mở kết nối tới từng đầu đọc qua Ethernet WSS hoặc USB COM. Dùng cách này để cấu hình RF, quét thẻ và ghi EPC.</p></header>
+<header class="pagehead"><h1>Điều khiển reader trực tiếp · SDK / Control API</h1><p class="lead">Ứng dụng của bạn mở kết nối tới từng đầu đọc qua Ethernet WSS hoặc cổng nối tiếp USB. Dùng cách này để cấu hình RF, quét thẻ và ghi EPC.</p></header>
 <details class="inline-toc"><summary>Trong trang này</summary><nav aria-label="Trong trang này"><a href="#choose-client">Chọn cách kết nối theo ngôn ngữ lập trình</a><a href="#install">Cài đặt gói SDK</a><a href="#scan">Ví dụ quét thẻ trong thời gian giới hạn</a><a href="#ready">Chờ đầu đọc sẵn sàng</a><a href="#configuration">Lệnh cấu hình</a><a href="#functions">Tra cứu hàm ReaderClient</a><a href="#exceptions">Ngoại lệ và thời gian chờ</a><a href="#multi-reader">Quét đồng thời trên nhiều đầu đọc</a></nav></details>
 <section id="choose-client"><h2>Chọn cách kết nối theo ngôn ngữ lập trình</h2>
 <p>Với C#, dùng Ndn5030.Client 0.10.0 trên .NET 10 và tạo một <code>ReaderClient</code> cho mỗi đầu đọc. Với Python hoặc ngôn ngữ khác, gửi yêu cầu JSON-RPC 2.0 đến đầu đọc. Avalonia chỉ dùng cho giao diện demo. Ứng dụng tích hợp có thể dùng framework riêng.</p>
-<ul><li><a href="#install">C# · Cài .NET SDK và gói Ndn5030.Client</a></li><li><a href="device.html#python">Python · Chạy ví dụ đọc thẻ qua Ethernet</a></li><li><a href="device.html#hello">Mọi ngôn ngữ · Kết nối WSS và nhận diện đầu đọc</a></li><li><a href="device.html#serial">Mọi ngôn ngữ · Định dạng bản tin và yêu cầu đầu tiên qua USB COM</a></li><li><a href="radio.html#operations">Các lệnh cấu hình RF và ghi EPC</a></li></ul>
+<ul><li><a href="#install">C# · Cài .NET SDK và gói Ndn5030.Client</a></li><li><a href="device.html#python">Python · Chạy ví dụ đọc thẻ qua Ethernet</a></li><li><a href="device.html#hello">Mọi ngôn ngữ · Kết nối WSS và nhận diện đầu đọc</a></li><li><a href="device.html#serial">Mọi ngôn ngữ · Định dạng bản tin và yêu cầu đầu tiên qua cổng nối tiếp USB</a></li><li><a href="radio.html#operations">Các lệnh cấu hình RF và ghi EPC</a></li></ul>
 </section>
 <section id="install"><h2>Cài đặt gói SDK</h2>
 <p>Cài bộ công cụ .NET 10 SDK. Gói Windows có sẵn <code>Ndn5030.Client.0.10.0.nupkg</code> và dự án mẫu <code>sdk/ReadTags</code>. Với dự án mẫu, dùng cấu hình NuGet đi kèm để khôi phục các gói phụ thuộc. Với dự án riêng, thêm thư mục sdk đã giải nén vào danh sách nguồn NuGet. NuGet cần truy cập nuget.org hoặc kho gói nội bộ để tải <code>System.IO.Ports</code>, <code>Zeroconf</code> và các gói phụ thuộc của chúng.</p>
@@ -53,7 +53,7 @@ var result = await reader.ScanAsync(request,
     tag =&gt; Console.WriteLine($&quot;ANT{tag.Antenna}   {tag.EpcHex}   {tag.TidHex}&quot;), stop.Token);
 Console.WriteLine($&quot;{result.Session.Reason}   {result.ReceivedCount}/{result.Session.LastSeq}   complete={result.DataComplete}&quot;);
 await reader.ReleaseLeaseAsync();</code></pre></div>
-<div class="note note" role="note"><p><strong>Lưu ý.</strong> Mỗi đầu đọc chỉ phục vụ một ứng dụng điều khiển tại một thời điểm. Hãy chọn <strong>Disconnect</strong> trong TCPHost trước khi chạy ví dụ trên cùng đầu đọc.</p></div>
+<div class="note note" role="note"><p><strong>Lưu ý.</strong> Mỗi đầu đọc chỉ phục vụ một ứng dụng điều khiển tại một thời điểm. Hãy chọn <strong>Disconnect</strong> trong Reader Management Console trước khi chạy ví dụ trên cùng đầu đọc.</p></div>
 <div class="sample"><div class="samplebar"><span>PowerShell</span><button type="button" class="copy" hidden>Sao chép</button></div><pre><code>dotnet run -- 192.168.77.2
 dotnet run -- COM7</code></pre></div>
 <p><code>ScanAsync</code> tự xin quyền điều khiển có thời hạn (lease) nếu ứng dụng chưa giữ quyền. Sau đó SDK bắt đầu quét và nhận từng lượt đọc thẻ. Nếu ứng dụng yêu cầu hủy trong khi đang quét, SDK gửi lệnh dừng cho phiên đó và chờ kết quả cuối. <code>ReceivedCount</code> là số lượt đọc đã nhận, đếm theo số thứ tự riêng biệt. <code>DataComplete</code> chỉ bằng true khi đầu đọc đã về trạng thái rảnh, phiên kết thúc thành công, ứng dụng nhận đủ các số thứ tự và cả số bản tin bị mất và số lỗi đầu vào đều bằng 0.</p>
@@ -88,8 +88,8 @@ await reader.ReleaseLeaseAsync();</code></pre></div>
 <p>Tạo một ReaderClient cho mỗi đầu đọc và kiểm tra đúng ID trước khi quét đồng thời. Theo dõi số thứ tự, xử lý lỗi và hủy phiên riêng cho từng đầu đọc. Dùng <code class="wrap">(board_id, boot_id, session_id, seq)</code> làm khóa phân biệt từng lượt đọc.</p>
 <p>Mỗi ReaderClient có bộ đệm cho tối đa 1.024 thông báo chưa xử lý. Khi bộ đệm đầy, SDK đóng kết nối và ứng dụng phải coi dữ liệu của phiên là chưa đầy đủ. Trong hàm nhận thông báo, chuyển các tác vụ tốn thời gian như ghi cơ sở dữ liệu sang hàng đợi riêng và xử lý theo thứ tự nhận.</p>
 <div class="sample"><div class="samplebar"><span>C# · connected ReaderClient instances</span><button type="button" class="copy" hidden>Sao chép</button></div><pre><code>var result = await Task.WhenAll(
-    readerA.ScanAsync(new InventoryRequest(Guid.NewGuid(), [1], MaxDurationMs: 5000) { Data = &quot;epc_tid&quot; }),
-    readerB.ScanAsync(new InventoryRequest(Guid.NewGuid(), [1], MaxDurationMs: 5000) { Data = &quot;epc_tid&quot; }));
+    readerA.ScanAsync(new InventoryRequest(Guid.NewGuid(), [1, 2, 3, 4], MaxDurationMs: 5000) { Data = &quot;epc_tid&quot; }),
+    readerB.ScanAsync(new InventoryRequest(Guid.NewGuid(), [1, 2, 3, 4], MaxDurationMs: 5000) { Data = &quot;epc_tid&quot; }));
 foreach (var scan in result)
     Console.WriteLine($&quot;{scan.Session.BoardId}: {scan.ReceivedCount}/{scan.Session.LastSeq}, complete={scan.DataComplete}&quot;);</code></pre></div>
 <p>Gọi <code>ReaderDiscovery.SearchAsync()</code> để lấy danh sách đầu đọc đang quảng bá trên LAN. Truyền địa chỉ, cổng và ID đầu đọc của dòng đã chọn vào <code>ReaderClient.FromEthernet</code>. Sau khi kết nối lại, kiểm tra ID lần khởi động và phiên hiện tại trước khi gửi lệnh bắt đầu quét mới.</p>
@@ -99,6 +99,6 @@ var selected = devices.Single(item =&gt; item.BoardId == expectedBoardId);
 await using var reader = ReaderClient.FromEthernet(selected.Address, selected.Port, expectedBoardId: selected.BoardId);
 var hello = await reader.ConnectAsync();</code></pre></div>
 </section>
-<nav class="pager" aria-label="Danh mục tài liệu"><a href="demo.html"><small>Trang trước</small>← Tra cứu chức năng TCPHost</a><a class="next" href="gateway.html"><small>Tiếp theo</small>Tích hợp POS/backend · Gateway REST API →</a></nav></main>
+<nav class="pager" aria-label="Danh mục tài liệu"><a href="demo.html"><small>Trang trước</small>← Tra cứu chức năng Reader Management Console</a><a class="next" href="gateway.html"><small>Tiếp theo</small>Tích hợp POS/backend · Gateway REST API →</a></nav></main>
 <nav class="toc" aria-label="Trong trang này"><h2>Trong trang này</h2><a href="#choose-client">Chọn cách kết nối theo ngôn ngữ lập trình</a><a href="#install">Cài đặt gói SDK</a><a href="#scan">Ví dụ quét thẻ trong thời gian giới hạn</a><a href="#ready">Chờ đầu đọc sẵn sàng</a><a href="#configuration">Lệnh cấu hình</a><a href="#functions">Tra cứu hàm ReaderClient</a><a href="#exceptions">Ngoại lệ và thời gian chờ</a><a href="#multi-reader">Quét đồng thời trên nhiều đầu đọc</a></nav>
 </div></body></html>

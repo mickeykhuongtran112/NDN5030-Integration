@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Direct reader control · SDK / Control API · NDN5030</title>
-<meta name="description" content="Your application opens a connection to each reader over Ethernet WSS or USB COM. Use this path for RF configuration, inventory and EPC writes.">
+<meta name="description" content="Your application opens a connection to each reader over Ethernet WSS or USB serial. Use this path for RF configuration, inventory and EPC writes.">
 <link rel="stylesheet" href="assets/site.css">
 <script defer src="assets/index-en.js"></script>
 <script defer src="assets/site.js"></script>
@@ -18,15 +18,15 @@
 </div>
 <div class="sidebody">
 <div class="results" aria-label="Search results" aria-live="polite" hidden></div>
-<nav aria-label="Documentation navigation"><div class="navgroup"><h2>System overview</h2><a href="index.html">NDN5030 integration</a><a href="concepts.html">Concepts and terms</a></div><div class="navgroup"><h2>Setup and demo</h2><a href="commissioning.html">Connect to a reader</a><a href="demo.html">TCPHost function reference</a></div><div class="navgroup"><h2>Application integration</h2><a class="active" aria-current="page" href="sdk.html">Direct reader control · SDK / Control API</a><a href="gateway.html">POS/backend integration · Gateway REST API</a></div><div class="navgroup"><h2>API reference</h2><a href="rest.html">Gateway REST API</a><a href="device.html">Reader Control API</a><a href="radio.html">RF configuration</a></div><div class="navgroup"><h2>Validation and recovery</h2><a href="diagnostics.html">Diagnostics and recovery</a><a href="performance.html">Validation and performance</a></div></nav>
+<nav aria-label="Documentation navigation"><div class="navgroup"><h2>System overview</h2><a href="index.html">NDN5030 integration</a><a href="concepts.html">Concepts and terms</a></div><div class="navgroup"><h2>Setup and demo</h2><a href="commissioning.html">Connect to a reader</a><a href="demo.html">Reader Management Console function reference</a></div><div class="navgroup"><h2>Application integration</h2><a class="active" aria-current="page" href="sdk.html">Direct reader control · SDK / Control API</a><a href="gateway.html">POS/backend integration · Gateway REST API</a></div><div class="navgroup"><h2>API reference</h2><a href="rest.html">Gateway REST API</a><a href="device.html">Reader Control API</a><a href="radio.html">RF configuration</a></div><div class="navgroup"><h2>Validation and recovery</h2><a href="diagnostics.html">Diagnostics and recovery</a><a href="performance.html">Validation and performance</a></div></nav>
 </div></aside>
 <main id="main"><div class="mainbar"><div class="crumb"><a href="index.html">Documentation</a><span>/</span>Application integration</div>
 <nav class="language" aria-label="Language"><a href="sdk.html" lang="en" hreflang="en" aria-label="English" data-language-link aria-current="true">EN</a><a href="vi/sdk.html" lang="vi" hreflang="vi" aria-label="Tiếng Việt" data-language-link>VI</a></nav></div>
-<header class="pagehead"><h1>Direct reader control · SDK / Control API</h1><p class="lead">Your application opens a connection to each reader over Ethernet WSS or USB COM. Use this path for RF configuration, inventory and EPC writes.</p></header>
+<header class="pagehead"><h1>Direct reader control · SDK / Control API</h1><p class="lead">Your application opens a connection to each reader over Ethernet WSS or USB serial. Use this path for RF configuration, inventory and EPC writes.</p></header>
 <details class="inline-toc"><summary>On this page</summary><nav aria-label="On this page"><a href="#choose-client">Choose a client for your language</a><a href="#install">Package installation</a><a href="#scan">Bounded inventory example</a><a href="#ready">Wait for the reader to be ready</a><a href="#configuration">Configuration calls</a><a href="#functions">ReaderClient function reference</a><a href="#exceptions">Exceptions and timeouts</a><a href="#multi-reader">Multi-reader concurrency</a></nav></details>
 <section id="choose-client"><h2>Choose a client for your language</h2>
 <p>In C#, use one <code>ReaderClient</code> per reader with Ndn5030.Client 0.10.0 and .NET 10. In Python or another language, send JSON-RPC 2.0 requests directly to the same reader. Avalonia is the UI framework of the desktop demo. Both integration options work independently of it.</p>
-<ul><li><a href="#install">C# · Install the SDK</a></li><li><a href="device.html#python">Python · Run the Ethernet inventory example</a></li><li><a href="device.html#hello">Any language · WSS connection and reader identification</a></li><li><a href="device.html#serial">Any language · USB COM framing and first request</a></li><li><a href="radio.html#operations">RF operations and EPC writes</a></li></ul>
+<ul><li><a href="#install">C# · Install the SDK</a></li><li><a href="device.html#python">Python · Run the Ethernet inventory example</a></li><li><a href="device.html#hello">Any language · WSS connection and reader identification</a></li><li><a href="device.html#serial">Any language · USB serial framing and first request</a></li><li><a href="radio.html#operations">RF operations and EPC writes</a></li></ul>
 </section>
 <section id="install"><h2>Package installation</h2>
 <p>Install .NET 10 SDK. The Windows package includes <code>Ndn5030.Client.0.10.0.nupkg</code> and <code>sdk/ReadTags</code>. Restore that project using its included NuGet configuration, or add the extracted sdk directory as a NuGet source. Allow <code>System.IO.Ports</code> and <code>Zeroconf</code> dependencies to restore from NuGet or an internal mirror.</p>
@@ -53,7 +53,7 @@ var result = await reader.ScanAsync(request,
     tag =&gt; Console.WriteLine($&quot;ANT{tag.Antenna}   {tag.EpcHex}   {tag.TidHex}&quot;), stop.Token);
 Console.WriteLine($&quot;{result.Session.Reason}   {result.ReceivedCount}/{result.Session.LastSeq}   complete={result.DataComplete}&quot;);
 await reader.ReleaseLeaseAsync();</code></pre></div>
-<div class="note note" role="note"><p><strong>Note.</strong> A reader serves one controller at a time. Select <strong>Disconnect</strong> in TCPHost before you run the example on the same reader.</p></div>
+<div class="note note" role="note"><p><strong>Note.</strong> A reader serves one controller at a time. Select <strong>Disconnect</strong> in Reader Management Console before you run the example on the same reader.</p></div>
 <div class="sample"><div class="samplebar"><span>PowerShell</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>dotnet run -- 192.168.77.2
 dotnet run -- COM7</code></pre></div>
 <p><code>ScanAsync</code> acquires the lease, starts inventory, receives the tag notifications and, at the end, checks that it received every sequence number up to the last one the reader reported. Cancelling the token you pass to it sends Stop for that scan; the call still returns the final result. <code>ReceivedCount</code> counts observations; <code>DataComplete</code> requires a successful terminal result, no sequence gaps, zero reported drops and zero input errors.</p>
@@ -88,8 +88,8 @@ await reader.ReleaseLeaseAsync();</code></pre></div>
 <p>Create one ReaderClient per reader. Verify each board ID before starting concurrent scans. Keep cancellation, sequence tracking and error handling separate for each reader. Use <code class="wrap">(board_id, boot_id, session_id, seq)</code> as the unique key of one tag report.</p>
 <p>Each ReaderClient buffers up to 1,024 notifications that your code has not read yet. When the buffer is full the SDK closes the connection, and the scan must be treated as incomplete. Keep callbacks short: hand database writes and CPU-heavy work to your own worker queue, in arrival order.</p>
 <div class="sample"><div class="samplebar"><span>C# · connected ReaderClient instances</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>var result = await Task.WhenAll(
-    readerA.ScanAsync(new InventoryRequest(Guid.NewGuid(), [1], MaxDurationMs: 5000) { Data = &quot;epc_tid&quot; }),
-    readerB.ScanAsync(new InventoryRequest(Guid.NewGuid(), [1], MaxDurationMs: 5000) { Data = &quot;epc_tid&quot; }));
+    readerA.ScanAsync(new InventoryRequest(Guid.NewGuid(), [1, 2, 3, 4], MaxDurationMs: 5000) { Data = &quot;epc_tid&quot; }),
+    readerB.ScanAsync(new InventoryRequest(Guid.NewGuid(), [1, 2, 3, 4], MaxDurationMs: 5000) { Data = &quot;epc_tid&quot; }));
 foreach (var scan in result)
     Console.WriteLine($&quot;{scan.Session.BoardId}: {scan.ReceivedCount}/{scan.Session.LastSeq}, complete={scan.DataComplete}&quot;);</code></pre></div>
 <p>Use <code>ReaderDiscovery.SearchAsync()</code> to list the current local advertisements. Pass the selected result’s address, port and board ID to <code>ReaderClient.FromEthernet</code>. After reconnecting, check the boot ID and current session before sending another Start.</p>
@@ -99,6 +99,6 @@ var selected = devices.Single(item =&gt; item.BoardId == expectedBoardId);
 await using var reader = ReaderClient.FromEthernet(selected.Address, selected.Port, expectedBoardId: selected.BoardId);
 var hello = await reader.ConnectAsync();</code></pre></div>
 </section>
-<nav class="pager" aria-label="Documentation navigation"><a href="demo.html"><small>Previous</small>← TCPHost function reference</a><a class="next" href="gateway.html"><small>Next</small>POS/backend integration · Gateway REST API →</a></nav></main>
+<nav class="pager" aria-label="Documentation navigation"><a href="demo.html"><small>Previous</small>← Reader Management Console function reference</a><a class="next" href="gateway.html"><small>Next</small>POS/backend integration · Gateway REST API →</a></nav></main>
 <nav class="toc" aria-label="On this page"><h2>On this page</h2><a href="#choose-client">Choose a client for your language</a><a href="#install">Package installation</a><a href="#scan">Bounded inventory example</a><a href="#ready">Wait for the reader to be ready</a><a href="#configuration">Configuration calls</a><a href="#functions">ReaderClient function reference</a><a href="#exceptions">Exceptions and timeouts</a><a href="#multi-reader">Multi-reader concurrency</a></nav>
 </div></body></html>
